@@ -51,27 +51,40 @@
     z-index: 900; background: rgba(20,20,28,.8); color: #a7f3d0; padding: 4px 11px; border-radius: 999px;
     font: 700 11px -apple-system, sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,.3); white-space: nowrap; }
 
-  /* Signal-variant dropdown (top-left, below zoom) — mirrors AuraGold's VLF selector */
-  .var-sel { position: absolute; left: 10px; top: 96px; z-index: 1000; display: flex; align-items: center; gap: 5px;
-    background: #1f2430; color: #e8eaf0; border-radius: 11px; padding: 6px 9px; box-shadow: 0 2px 9px rgba(0,0,0,.32);
-    font: 800 11px -apple-system, sans-serif; }
-  .var-sel select { background: #2a3140; color: #e8eaf0; border: none; border-radius: 7px; padding: 4px 6px;
-    font: 700 12px -apple-system, sans-serif; cursor: pointer; }
-
-  /* Layer panel (top-right) — ported from AuraGold #layerPanel */
-  #layerPanel { position: absolute; top: 10px; right: 10px; z-index: 1200; display: flex; flex-direction: column; align-items: flex-end;
+  /* ============ Bottom-sheet layers panel (shared AuraGold/AuraOpal skeleton) ============ */
+  /* Top-right: Layers button ONLY (opens the bottom-sheet). Position unchanged. */
+  #layerPanel { position: absolute; top: 10px; right: 10px; z-index: 1200;
     font: 13px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   .lp-toggle { display: flex; align-items: center; gap: 7px; background: #1f2430; color: #2dd4bf; border: none; border-radius: 11px;
     padding: 9px 12px; box-shadow: 0 2px 9px rgba(0,0,0,.32); cursor: pointer; font-weight: 800; font-size: 13px; }
   .lp-toggle svg { width: 18px; height: 18px; display: block; }
-  .lp-body { display: none; margin-top: 7px; width: min(300px, calc(100vw - 20px)); max-height: 72vh; overflow-y: auto;
-    -webkit-overflow-scrolling: touch; background: #fff; border-radius: 13px; box-shadow: 0 6px 22px rgba(0,0,0,.28); padding: 0 6px 6px; }
-  #layerPanel.open .lp-body { display: block; }
-  #layerPanel.open .lp-toggle { box-shadow: 0 2px 9px rgba(0,0,0,.32), 0 0 0 2px #2dd4bf inset; }
-  .lp-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff;
-    padding: 9px 4px 6px; z-index: 1; border-bottom: 1px solid #eee; }
-  .lp-head strong { font-size: 13.5px; color: #1f2430; }
-  .lp-x { background: none; border: none; font-size: 21px; line-height: 1; color: #888; cursor: pointer; padding: 0 2px; }
+  .lp-toggle.on { box-shadow: 0 2px 9px rgba(0,0,0,.32), 0 0 0 2px #2dd4bf inset; }
+
+  /* Draggable bottom-sheet: peek(15%) / half(50%) / full(90%). Map stays visible & interactive above.
+     Resting states are pure CSS (vh height + % transforms relative to the sheet's own height) so the
+     browser resolves units consistently; drag is computed as a unit-independent ratio in JS. */
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1210; height: 90vh;
+    background: #fff; border-radius: 16px 16px 0 0; box-shadow: 0 -6px 28px rgba(0,0,0,.34);
+    display: flex; flex-direction: column; transform: translateY(100%);
+    transition: transform .26s cubic-bezier(.32,.72,0,1); overscroll-behavior: contain; }
+  .sheet.dragging { transition: none; }
+  .sheet-handle { flex: 0 0 auto; padding: 9px 0 4px; display: flex; justify-content: center; cursor: grab; touch-action: none; }
+  .sheet-grip { width: 40px; height: 5px; border-radius: 3px; background: #d3d0c4; }
+  .sheet-head { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 16px 8px; border-bottom: 1px solid #eee; }
+  .sheet-head strong { font-size: 14px; color: #1f2430; }
+  .sheet-x { background: none; border: none; font-size: 22px; line-height: 1; color: #999; cursor: pointer; padding: 0 2px; }
+  .sheet-body { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 4px 12px calc(18px + env(safe-area-inset-bottom)); touch-action: pan-y; }
+  /* while the sheet is open, tuck the bottom action clusters so the map above stays clean & interactive */
+  body.sheet-open .fab-stack, body.sheet-open .cta { opacity: 0; pointer-events: none; transition: opacity .15s; }
+
+  /* Signal-variant selector — lives INSIDE the sheet's geophysics group (was the top-left dropdown) */
+  .lp-signal { padding: 6px 3px 2px; }
+  .lp-signal-lbl { font: 800 10.5px -apple-system, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #6a7a80; margin: 0 2px 6px; }
+  .lp-seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  .lp-seg button { flex: 1 1 auto; min-width: 52px; border: 1px solid #dfe6e6; background: #f3f7f7; color: #35555c;
+    font: 700 11.5px/1 -apple-system, sans-serif; padding: 8px 5px; border-radius: 8px; cursor: pointer; }
+  .lp-seg button.on { background: #0e7490; color: #fff; border-color: #0e7490; }
   .lp-grp { font-weight: 800; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: #0e7490; padding: 9px 4px 3px; }
   .lp-row { display: flex; align-items: center; gap: 7px; padding: 5px 3px; }
   .lp-row + .lp-row { border-top: 1px solid #eef2f2; }
@@ -114,6 +127,26 @@
   .mp-head strong { font-size: 15px; }
   .mp-x { background: none; border: none; font-size: 24px; color: #8b93a1; cursor: pointer; line-height: 1; }
   .mp h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: #7c94a3; margin: 16px 0 8px; }
+  /* Collapsible menu sections (native <details>) — concise, everything squeezed under headings */
+  .mp-acc { border-top: 1px solid #23262f; }
+  .mp-acc:first-of-type { border-top: none; }
+  .mp-acc > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 9px;
+    padding: 13px 2px; font: 800 14px -apple-system, sans-serif; color: #e8eaf0; -webkit-tap-highlight-color: transparent; }
+  .mp-acc > summary::-webkit-details-marker { display: none; }
+  .mp-acc > summary .mp-caret { margin-left: auto; color: #64707e; font-size: 12px; transition: transform .16s; }
+  .mp-acc[open] > summary .mp-caret { transform: rotate(90deg); }
+  .mp-acc > summary .mp-ic { font-size: 16px; }
+  .mp-acc-body { padding: 0 2px 14px; }
+  /* Technology / research cards — tight one-paragraph explainers */
+  .tech-card { border: 1px solid #23262f; border-radius: 10px; padding: 10px 12px; margin: 0 0 9px; background: #171a22; }
+  .tech-card h4 { margin: 0 0 4px; font-size: 13px; color: #a7f3d0; display: flex; align-items: center; gap: 6px; }
+  .tech-card p { margin: 0; font-size: 12px; line-height: 1.5; color: #c2c9d3; }
+  .tech-card .use { display: block; margin-top: 5px; font-size: 11px; color: #8b93a1; }
+  .tech-card .use b { color: #cdd3dc; }
+  .res-card { border-left: 3px solid #14b8a6; background: rgba(20,184,166,.06); border-radius: 4px; padding: 8px 11px; margin: 0 0 9px; }
+  .res-card .rt { font-weight: 700; font-size: 12.5px; color: #dfe4ec; }
+  .res-card .rl { font-size: 12px; color: #9aa3b0; line-height: 1.5; margin: 3px 0 5px; }
+  .res-card a { display: inline-block; font-size: 12px; font-weight: 700; color: #2dd4bf; text-decoration: none; }
 
   /* Toast */
   .ag-toast { position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); z-index: 1400;
@@ -184,26 +217,19 @@
 <div class="title-pill"><span class="dot"></span> AuraOpal · Opalton</div>
 <div class="status-chip" id="statusChip">📍 18 finds · Aug 2025</div>
 
-<!-- Top-left (below zoom): primary-signal variant selector (mirrors AuraGold's VLF dropdown) -->
-<div class="var-sel" id="varSel" title="Primary signal overlay">
-  <span>Signal</span>
-  <select id="varSelect" aria-label="Primary signal overlay">
-    <option value="none">None</option>
-    <option value="rad">Radiometrics</option>
-    <option value="mag">Magnetics RTP</option>
-    <option value="1vd">Magnetics 1VD</option>
-    <option value="hill">Hillshade</option>
-  </select>
-</div>
-
-<!-- Top-right: unified Layers panel (every layer, tickable, with a live opacity slider) -->
+<!-- Top-right: Layers button ONLY — opens the bottom-sheet below (signal selector now lives inside it) -->
 <div id="layerPanel" aria-label="Map layers">
   <button id="lpToggle" class="lp-toggle" type="button" aria-expanded="false" title="Map layers">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/><polyline points="2 12.5 12 19 22 12.5"/><polyline points="2 16.5 12 23 22 16.5"/></svg>
     <span>Layers</span>
   </button>
-  <div class="lp-body" id="lpBody" role="group" aria-label="Map layers list">
-    <div class="lp-head"><strong>Map layers</strong><button class="lp-x" id="lpClose" type="button" aria-label="Collapse">×</button></div>
+</div>
+
+<!-- Draggable bottom-sheet: layers + in-panel signal selector. Peek/half/full; map stays visible above. -->
+<div class="sheet" id="layerSheet" data-state="hidden" role="group" aria-label="Map layers">
+  <div class="sheet-handle" id="sheetHandle" role="slider" aria-label="Drag to resize panel" tabindex="0"><span class="sheet-grip"></span></div>
+  <div class="sheet-head"><strong>Map layers</strong><button class="sheet-x" id="sheetClose" type="button" aria-label="Close">×</button></div>
+  <div class="sheet-body" id="lpBody">
     <div id="lpList"></div>
     <div class="lp-note" id="lpNote"></div>
   </div>
@@ -227,25 +253,68 @@
 <aside class="mp" id="menuPanel" aria-hidden="true">
   <div class="mp-head"><strong>☰ Menu</strong><button class="mp-x" id="menuClose" aria-label="Close">×</button></div>
 
-  <h2>📋 Site info · the lease</h2>
-  <div id="siteInfo" class="about"></div>
+  <details class="mp-acc">
+    <summary><span class="mp-ic">📍</span> Site info · the lease <span class="mp-caret">▸</span></summary>
+    <div class="mp-acc-body"><div id="siteInfo" class="about"></div></div>
+  </details>
 
-  <h2>Legend</h2>
-  <div id="legend"></div>
+  <details class="mp-acc">
+    <summary><span class="mp-ic">🎨</span> Legend <span class="mp-caret">▸</span></summary>
+    <div class="mp-acc-body"><div id="legend"></div></div>
+  </details>
 
-  <h2>About &amp; data sources</h2>
-  <div class="about">
-    <p><b>AuraOpal</b> is an offline-first field map for the <b>Opalton boulder-opal field</b>, Central-West
-    Queensland, anchored on <b>Steven's mining lease</b> (Aug 2025 field trip). It plots his ground-truth finds
-    against the geology, geophysics and mining-tenement layers that drive boulder-opal favourability. It shows the
-    <i>raw</i> data honestly — it does <b>not</b> predict where opal is. Favourability scoring is deliberately
-    deferred until the data layers are complete and calibrated against the ground truth.</p>
-    <div class="src-list" id="srcList"></div>
-    <p class="pop-adv" style="color:#f0b06a">⚠ Fossicking / mining legality shown is advisory only, derived from
-    public tenement data. Always verify tenure and permissions with the Queensland Government before entering or
-    digging on any ground. Aboriginal cultural heritage applies everywhere in Queensland and is <b>not</b> shown
-    here — check the Cultural Heritage Duty of Care Guidelines separately.</p>
-  </div>
+  <details class="mp-acc">
+    <summary><span class="mp-ic">🔬</span> Technologies <span class="mp-caret">▸</span></summary>
+    <div class="mp-acc-body">
+      <div class="tech-card"><h4>🧲 ERT — electrical resistivity tomography</h4>
+        <p>Injects current through electrode pairs and maps subsurface resistivity. The pick when a clay <b>cap</b> or unknown overburden defeats radar — it images <i>every</i> clay contrast, so it maps the clay-basement <b>topography</b> whose low points pool the silica water that grows the thick opal.</p>
+        <span class="use"><b>Use it:</b> run 2D lines across suspected clay lows before the dozer. A DIY OhmPi build is viable for the lease.</span></div>
+      <div class="tech-card"><h4>📡 GPR — ground-penetrating radar</h4>
+        <p>Bounces high-frequency radio pulses off subsurface contrasts for a high-res image. Shines in typical <b>uncapped</b> sandstone — it images the ironstone target above the basal clay, then stops at the clay. Weakness: "false clay pockets" create unpredictable mid-section dead-spots.</p>
+        <span class="use"><b>Use it:</b> grid the uncapped patches for shallow (0–8 m) detail.</span></div>
+      <div class="tech-card"><h4>🧭 Magnetics — TMI-RTP · 1VD</h4>
+        <p>GA national grids measuring rock magnetic contrast. <b>Weak over Opalton</b> — the Winton sediments are non-magnetic. RTP re-poles the anomaly over its source; 1VD sharpens shallow/edge detail.</p>
+        <span class="use"><b>Use it:</b> regional structure context only, not an opal finder.</span></div>
+      <div class="tech-card"><h4>☢️ Radiometrics — K · Th · U ternary</h4>
+        <p>Measures natural surface gamma. More useful here than mag: it maps regolith/silicification near ironstone even when mag is flat.</p>
+        <span class="use"><b>Use it:</b> spot weathering / alteration trends across the field.</span></div>
+      <div class="tech-card"><h4>⛰ Hillshade / DEM</h4>
+        <p>Shaded relief + 10 m contours from GA 1-second (~30 m) SRTM. No LiDAR over remote Opalton, so terrain is coarse — still enough to read drainage and the gentle rises.</p>
+        <span class="use"><b>Use it:</b> relate finds to micro-topography and the clay-low drainage.</span></div>
+    </div>
+  </details>
+
+  <details class="mp-acc">
+    <summary><span class="mp-ic">📚</span> Research <span class="mp-caret">▸</span></summary>
+    <div class="mp-acc-body">
+      <div class="res-card"><div class="rt">GPR + ERT Deep Dive</div>
+        <div class="rl">The physics of both methods against Steven's exact stratigraphy, then every way to get the gear — build / buy / rent / contract — with AUD figures. Lands on ERT + GPR together, ERT first.</div>
+        <a href="https://github.com/banksiasprings/auraopal/blob/main/research/gpr_ert_deep_dive.md" target="_blank" rel="noopener">Read more ↗</a></div>
+      <div class="res-card"><div class="rt">DIY ERT Build Project</div>
+        <div class="rl">End-to-end guide to building an OhmPi resistivity imager, proving it on the farm, and taking it to Opalton — parts, software, running a survey, cost &amp; safety.</div>
+        <a href="https://github.com/banksiasprings/auraopal/blob/main/research/diy_ert_build_project.md" target="_blank" rel="noopener">Read more ↗</a></div>
+      <div class="res-card"><div class="rt">Opal favourability — data sources</div>
+        <div class="rl">Ranks the full menu of on-claim geophysics and documents the geology / geophysics / tenement layers behind this map.</div>
+        <a href="https://github.com/banksiasprings/auraopal/blob/main/research/opal_favourability_data_sources.md" target="_blank" rel="noopener">Read more ↗</a></div>
+    </div>
+  </details>
+
+  <details class="mp-acc">
+    <summary><span class="mp-ic">ℹ️</span> About &amp; data sources <span class="mp-caret">▸</span></summary>
+    <div class="mp-acc-body about">
+      <p><b>AuraOpal</b> <span id="aboutVer"></span> — an offline-first field map for the <b>Opalton boulder-opal field</b>, Central-West
+      Queensland, anchored on <b>Steven's mining lease</b> (Aug 2025 field trip). It plots his ground-truth finds
+      against the geology, geophysics and mining-tenement layers that drive boulder-opal favourability. It shows the
+      <i>raw</i> data honestly — it does <b>not</b> predict where opal is. Favourability scoring is deliberately
+      deferred until the data layers are complete and calibrated against the ground truth.</p>
+      <p style="font-size:12px"><a href="https://github.com/banksiasprings/auraopal" target="_blank" rel="noopener">github.com/banksiasprings/auraopal</a> · sibling of <a href="https://banksiasprings.github.io/auragold/" target="_blank" rel="noopener">AuraGold</a></p>
+      <div class="src-list" id="srcList"></div>
+      <p class="pop-adv" style="color:#f0b06a">⚠ Fossicking / mining legality shown is advisory only, derived from
+      public tenement data. Always verify tenure and permissions with the Queensland Government before entering or
+      digging on any ground. Aboriginal cultural heritage applies everywhere in Queensland and is <b>not</b> shown
+      here — check the Cultural Heritage Duty of Care Guidelines separately.</p>
+    </div>
+  </details>
 </aside>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -258,7 +327,7 @@
    (excavation geology, not metal detection).
    BUMP APP_VERSION in lockstep with SHELL_REV in sw.js on every deploy.
    ============================================================================ */
-var APP_VERSION = 'v0.1.3';
+var APP_VERSION = 'v0.1.4';
 
 // ---- Study area -----------------------------------------------------------
 // The lease is the anchor (80% of the value). Opalton field bbox ≈ 142.5–143.0°E,
@@ -628,7 +697,8 @@ var lpRowByKey = {};
 function buildPanel(){
   var lpList = document.getElementById('lpList'); lpList.innerHTML = '';
   LP.forEach(function(c){
-    if (c.grp){ var h=document.createElement('div'); h.className='lp-grp'; h.textContent=c.grp; lpList.appendChild(h); return; }
+    if (c.grp){ var h=document.createElement('div'); h.className='lp-grp'; h.textContent=c.grp; lpList.appendChild(h);
+      if (c.grp === 'Geology & geophysics') lpList.appendChild(buildSignalSeg()); return; }
     var st = lyState(c), ly = c.get();
     setPaneOpacity(c.pane, st.op/100);
     if (ly){ if (st.on && !map.hasLayer(ly)) ly.addTo(map); if (!st.on && map.hasLayer(ly)) map.removeLayer(ly); }
@@ -666,26 +736,57 @@ function reconcile(k){
   e.cb.checked = st.on; e.row.classList.toggle('off', !st.on);
 }
 
-var GEO_VARS = ['rad','mag','1vd','hill'];   // geophysics rasters — one shown at a time via Signal dropdown
+var GEO_VARS = ['rad','mag','1vd','hill'];   // geophysics rasters — one shown at a time via the in-panel Signal selector
+// Signal-variant selector (was the top-left dropdown) — now lives INSIDE the sheet's Geology group.
+var SIGNALS = [ {k:'none',lbl:'None'}, {k:'rad',lbl:'Radiometrics'}, {k:'mag',lbl:'Mag RTP'}, {k:'1vd',lbl:'Mag 1VD'}, {k:'hill',lbl:'Hillshade'} ];
+function buildSignalSeg(){
+  var wrap=document.createElement('div'); wrap.className='lp-signal';
+  wrap.innerHTML='<div class="lp-signal-lbl">Signal overlay — one at a time</div>';
+  var seg=document.createElement('div'); seg.className='lp-seg'; seg.id='lpSignalSeg';
+  SIGNALS.forEach(function(s){ var b=document.createElement('button'); b.type='button'; b.dataset.sig=s.k; b.textContent=s.lbl;
+    b.addEventListener('click', function(){ GEO_VARS.forEach(function(k){ lpSetLayer(k, s.k===k); }); syncVarSelect(); }); seg.appendChild(b); });
+  wrap.appendChild(seg); return wrap;
+}
 baseSat.addTo(map);                 // instant base while bundled layers fetch
 buildPanel();                        // panel builds immediately (robust — not gated on fetches)
 loadContours(function(){ reconcile('contour'); });
 loadWinton(function(){ reconcile('winton'); });
 loadTenements(function(){ reconcile('tenement'); });
 
-// Layer panel open/close
-var lpEl = document.getElementById('layerPanel');
-document.getElementById('lpToggle').addEventListener('click', function(){
-  lpEl.classList.toggle('open'); this.setAttribute('aria-expanded', lpEl.classList.contains('open')); });
-document.getElementById('lpClose').addEventListener('click', function(){ lpEl.classList.remove('open'); });
+// ---- Bottom-sheet controller (peek/half/full drag + tap-toggle) — shared skeleton with AuraGold ----
+(function(){
+  var sheet=document.getElementById('layerSheet'), handle=document.getElementById('sheetHandle'),
+      toggleBtn=document.getElementById('lpToggle'), closeBtn=document.getElementById('sheetClose');
+  // translateY % (of the sheet's own height) for each resting state — reveals 90/50/15% of a 90vh sheet.
+  var PCT={hidden:100,peek:83.333,half:44.444,full:0};
+  function setState(s){ sheet.dataset.state=s; sheet.style.transform='translateY('+PCT[s]+'%)';
+    document.body.classList.toggle('sheet-open', s!=='hidden');
+    toggleBtn.classList.toggle('on', s!=='hidden'); toggleBtn.setAttribute('aria-expanded', s!=='hidden'?'true':'false'); }
+  toggleBtn.addEventListener('click', function(){ setState(sheet.dataset.state==='hidden' ? 'half':'hidden'); });
+  closeBtn.addEventListener('click', function(){ setState('hidden'); });
+  // Drag as a unit-independent ratio: delta / sheet-height → % (works on any DPR / dynamic toolbar).
+  var dragging=false, startY=0, startPct=0, sheetH=1;
+  function down(e){ dragging=true; sheet.classList.add('dragging'); startY=(e.touches?e.touches[0].clientY:e.clientY);
+    startPct=PCT[sheet.dataset.state||'hidden']; sheetH=sheet.getBoundingClientRect().height||1; if(e.cancelable)e.preventDefault(); }
+  function move(e){ if(!dragging)return; var y=(e.touches?e.touches[0].clientY:e.clientY);
+    var pct=Math.max(0,Math.min(100, startPct + (y-startY)/sheetH*100)); sheet.style.transform='translateY('+pct+'%)'; if(e.cancelable)e.preventDefault(); }
+  function up(e){ if(!dragging)return; dragging=false; sheet.classList.remove('dragging');
+    var y=(e.changedTouches?e.changedTouches[0].clientY:e.clientY), pct=Math.max(0,Math.min(100, startPct + (y-startY)/sheetH*100));
+    var best='half', bd=1e9; ['full','half','peek','hidden'].forEach(function(s){ var d=Math.abs(PCT[s]-pct); if(d<bd){bd=d;best=s;} }); setState(best); }
+  handle.addEventListener('touchstart',down,{passive:false}); handle.addEventListener('touchmove',move,{passive:false}); handle.addEventListener('touchend',up);
+  handle.addEventListener('mousedown',down); window.addEventListener('mousemove',move); window.addEventListener('mouseup',up);
+  handle.addEventListener('keydown', function(e){ var order=['hidden','peek','half','full'], i=order.indexOf(sheet.dataset.state||'hidden');
+    if(e.key==='ArrowUp'){ setState(order[Math.min(order.length-1,i+1)]); e.preventDefault(); }
+    if(e.key==='ArrowDown'){ setState(order[Math.max(0,i-1)]); e.preventDefault(); } });
+  setState('hidden');
+})();
 
-// Signal-variant dropdown (mirrors AuraGold's VLF selector) — show one geophysics raster at a time.
-document.getElementById('varSelect').addEventListener('change', function(){
-  var v = this.value; GEO_VARS.forEach(function(k){ lpSetLayer(k, v===k); });
-});
+// Signal-variant selector — reflect the single active geophysics raster in the segmented buttons.
 function syncVarSelect(){
   var on = GEO_VARS.filter(function(k){ return lyState({ k:k, on:false }).on; });
-  var sel = document.getElementById('varSelect'); if (sel) sel.value = (on.length===1 ? on[0] : 'none');
+  var active = (on.length===1 ? on[0] : 'none');
+  var seg = document.getElementById('lpSignalSeg'); if (!seg) return;
+  Array.prototype.forEach.call(seg.querySelectorAll('button'), function(b){ b.classList.toggle('on', b.dataset.sig===active); });
 }
 
 // Menu panel (right slide-in) — legend + site info + about
@@ -802,6 +903,7 @@ map.on('locationfound', function(e){
 
 // ---- Version badge + service worker ---------------------------------------
 document.getElementById('versionBadge').textContent = 'AuraOpal ' + APP_VERSION;
+(function(){ var av=document.getElementById('aboutVer'); if(av) av.textContent = APP_VERSION; })();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('SW reg failed', e); });

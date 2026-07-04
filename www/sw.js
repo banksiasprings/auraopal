@@ -10,10 +10,10 @@
  * Bump SHELL_REV on every deploy so returning clients re-fetch the app shell.
  * Keep it in lockstep with APP_VERSION in index.html (the on-screen version badge).
  */
-// Chip stays 'v0.1.3' (APP_VERSION), but the cache key gets a '-gt' suffix so this
-// ground-truth rebuild (KML v2: 18 finds + 12 field photos + mined polygon) actually
-// purges the previous v0.1.3 shell and re-fetches on installed clients.
-const SHELL_REV = 'v0.1.3-ux';
+// v0.1.4 = UX refactor (bottom-sheet layers panel + in-panel signal selector +
+// collapsible menu accordions), matched with AuraGold v44.0. Bump purges the prior
+// shell and re-fetches on installed clients.
+const SHELL_REV = 'v0.1.4';
 const SHELL_CACHE = 'auraopal-shell-' + SHELL_REV;
 const TILE_CACHE = 'auraopal-tiles-v1';
 

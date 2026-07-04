@@ -209,3 +209,45 @@ Favourability scoring (data-first discipline — not until layers are complete/h
 · terrain slope+drainage for clay-dam pockets · Geofabric drainage · faults/lineaments · offline
 trip-area tiles (AuraGold TTL model) · 1:100k detailed geology · on-device verify on Steven's
 Motorola (ADB Wi-Fi-bound, same limitation as AuraGold — emulator/headless only for v0.1).
+
+---
+
+## v0.1.4 — bottom-sheet UX refactor (sister-synced with AuraGold v44.0)
+
+Steven's critique: the layers panel covered the whole screen (open/close/open just to see the map
+react), the top-left Signal dropdown was an orphan, and the menu wanted collapsible sections to
+"squeeze lots of data in." Shipped a unified refactor shared skeleton-for-skeleton with AuraGold.
+
+- **Layers → draggable bottom-sheet.** Top-right button is now Layers-ONLY; it opens a bottom-sheet
+  with **peek (~15%) / half (~50%) / full (~90%)** states, a drag handle, a scrolling body, and the
+  **map stays visible & interactive above** at every state. Tap Layers = open(half)/close; drag the
+  handle (or ↑/↓ keys) to peek/half/full. `body.sheet-open` tucks the bottom CTAs + FAB stack so the
+  map above reads clean.
+  - **Robustness:** resting states use a `vh` height; the drag is a **unit-independent ratio**
+    (`Δy / sheetHeight → %`) and the snap transform is applied inline as a **% of the element's own
+    height**, so it never depends on `window.innerHeight` (which the Chromium mobile emulator reports
+    in device px while CSS uses CSS px — a 2× trap). `position:absolute` (not fixed) — the emulator's
+    fixed-positioning viewport is internally inconsistent; absolute matches the other panels.
+- **Signal selector moved INTO the sheet.** The top-left `varSel` dropdown is gone; a segmented
+  **"Signal overlay — one at a time"** control (None / Radiometrics / Mag RTP / Mag 1VD / Hillshade)
+  now lives in the sheet's *Geology & geophysics* group and drives the same single-select
+  (`GEO_VARS`); the per-layer opacity rows stay for fine control. `syncVarSelect()` keeps the
+  segmented buttons in sync with the rows.
+- **Menu → collapsible accordions** (native `<details>`, all default-collapsed): **📍 Site info ·
+  🎨 Legend · 🔬 Technologies · 📚 Research · ℹ️ About**. Technologies = 5 tight one-paragraph cards
+  (ERT / GPR / Magnetics / Radiometrics / Hillshade-DEM). Research = 3 pointers with one-line
+  takeaways + "Read more ↗" to the GitHub blob (`research/*.md`). About now carries the version +
+  repo/sibling links.
+- **Placement locked to the shared 5-cluster rule:** top-left = zoom only · top-right = Layers only ·
+  top-centre = title pill + status chip · bottom-right = 🌐 3D / ☰ Menu / 📍 Locate · bottom-left =
+  green Start-survey / red Log-a-find (+ passive version-badge label). No orphan controls remain.
+
+### Verified (Chromium mobile emulation, localhost:8081, 375×812)
+- 0 console errors. Default state clean (no orphan dropdown, all 5 clusters correct, badge `v0.1.4`).
+- Bottom-sheet peek/half/full all render with the map visible above; Signal→Radiometrics single-
+  selects the layer + syncs its row; Menu opens all 5 accordions; Technology cards render (5),
+  Research links resolve (3, GitHub blob), Legend (12 items) + Site info (populated).
+
+### Deferred / notes
+- 3D terrain sidecar still an honest placeholder in AuraOpal (parity toast). On-device verify on
+  Steven's Motorola still ADB-Wi-Fi-bound (emulator-only, same as prior versions).
