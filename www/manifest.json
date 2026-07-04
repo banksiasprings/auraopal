@@ -1,0 +1,20 @@
+{
+  "name": "AuraOpal",
+  "short_name": "AuraOpal",
+  "description": "Offline-first boulder-opal prospecting field map for the Opalton field, Central-West Queensland — ground-truth finds, geology and geophysics overlays, mining-tenement legality, installable to your phone.",
+  "id": "./",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1020",
+  "theme_color": "#0e7490",
+  "lang": "en-AU",
+  "dir": "ltr",
+  "categories": ["navigation", "travel", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

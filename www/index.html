@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=4, viewport-fit=cover">
+<title>AuraOpal — Opalton Boulder Opal</title>
+<meta name="description" content="Offline-first boulder-opal prospecting field map for the Opalton field, Central-West Queensland.">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e7490">
+<link rel="icon" href="icons/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AuraOpal">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --opal-teal: #0e7490;
+    --opal-teal-2: #14b8a6;
+    --ironstone: #2b2118;
+    --ink: #12131a;
+    --panel: rgba(18, 20, 26, 0.94);
+    --gem: #22c55e;
+    --red: #ef4444;
+    --potch: #92531f;
+    --patch: #f59e0b;
+  }
+  html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--ink); }
+  #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: #0b1020; }
+
+  /* Version badge */
+  .version-badge {
+    position: absolute; left: 8px; bottom: 8px; z-index: 1000;
+    background: rgba(14, 116, 144, 0.92); color: #fff; font-size: 11px; font-weight: 700;
+    letter-spacing: .3px; padding: 3px 8px; border-radius: 6px; pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+
+  /* Header title pill */
+  .app-title {
+    position: absolute; top: calc(8px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+    background: var(--panel); color: #fff; padding: 7px 14px; border-radius: 999px; z-index: 900;
+    font-size: 13px; font-weight: 700; letter-spacing: .3px; display: flex; align-items: center; gap: 7px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35); white-space: nowrap;
+  }
+  .app-title .dot { width: 9px; height: 9px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #a7f3d0, var(--opal-teal-2) 60%, #0369a1); box-shadow: 0 0 6px #14b8a6; }
+
+  /* FAB stack (bottom-right) */
+  .fab-stack { position: absolute; right: 12px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 1000;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .fab { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--panel); color: #fff; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.4);
+    display: flex; align-items: center; justify-content: center; }
+  .fab:active { transform: scale(.94); }
+  .fab.accent { background: var(--opal-teal); }
+
+  /* Slide-up menu drawer */
+  .drawer-scrim { position: absolute; inset: 0; background: rgba(0,0,0,.45); z-index: 1200; opacity: 0;
+    pointer-events: none; transition: opacity .18s; }
+  .drawer-scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1300; max-height: 82%; overflow-y: auto;
+    background: #14161d; color: #e8eaf0; border-radius: 16px 16px 0 0; transform: translateY(102%);
+    transition: transform .22s cubic-bezier(.2,.8,.2,1); box-shadow: 0 -4px 20px rgba(0,0,0,.5);
+    padding: 8px 16px calc(24px + env(safe-area-inset-bottom)); }
+  .drawer.open { transform: translateY(0); }
+  .drawer .grab { width: 40px; height: 4px; border-radius: 2px; background: #454b57; margin: 8px auto 12px; }
+  .drawer h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: #7c94a3; margin: 18px 0 8px; }
+  .drawer h2:first-of-type { margin-top: 4px; }
+
+  .layer-row { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid #22252e; }
+  .layer-row:last-child { border-bottom: none; }
+  .layer-row label { flex: 1; font-size: 14px; display: flex; align-items: center; gap: 9px; cursor: pointer; }
+  .layer-row .sw { width: 15px; height: 15px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,.25); }
+  .layer-row .sub { display: block; font-size: 11px; color: #8b93a1; margin-top: 1px; }
+  /* iOS-style switch */
+  .sw-toggle { position: relative; width: 42px; height: 25px; flex: none; }
+  .sw-toggle input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .sw-toggle .track { position: absolute; inset: 0; background: #3a3f4b; border-radius: 999px; transition: background .15s; }
+  .sw-toggle .knob { position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; background: #fff;
+    border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  .sw-toggle input:checked + .track { background: var(--opal-teal); }
+  .sw-toggle input:checked ~ .knob { transform: translateX(17px); }
+
+  .legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 4px 2px; color: #d3d8e0; }
+  .legend-item .g { width: 15px; height: 15px; flex: none; }
+  .gem-marker { transform: rotate(45deg); border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+
+  .about { font-size: 12.5px; line-height: 1.5; color: #b9c0cb; }
+  .about a { color: var(--opal-teal-2); }
+  .about code { background: #22252e; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
+  .src-list { font-size: 11.5px; color: #8b93a1; line-height: 1.55; }
+  .src-list b { color: #cdd3dc; }
+
+  /* Leaflet popups — dark opal theme */
+  .leaflet-popup-content-wrapper { background: #171a22; color: #e8eaf0; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
+  .leaflet-popup-tip { background: #171a22; }
+  .leaflet-popup-content { margin: 12px 14px; font-size: 13px; line-height: 1.45; }
+  .pop-title { font-weight: 700; font-size: 14px; margin-bottom: 3px; display: flex; align-items: center; gap: 7px; }
+  .pop-chip { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 999px; color: #fff; }
+  .pop-kv { color: #9aa3b0; }
+  .pop-note { margin-top: 5px; color: #c7cdd6; font-style: italic; }
+  .pop-adv { margin-top: 7px; padding-top: 7px; border-top: 1px solid #262a34; font-size: 11.5px; color: #f0b06a; }
+
+  .leaflet-container { background: #0b1020; }
+  .leaflet-bar a { background: #171a22; color: #e8eaf0; border-bottom-color: #262a34; }
+  .leaflet-bar a:hover { background: #22252e; }
+  .leaflet-control-attribution { background: rgba(18,20,26,.7) !important; color: #8b93a1 !important; font-size: 10px; }
+  .leaflet-control-attribution a { color: #7c94a3 !important; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="version-badge" id="versionBadge"></div>
+<div class="app-title"><span class="dot"></span> AuraOpal · Opalton</div>
+
+<div class="fab-stack">
+  <button class="fab" id="locateBtn" title="Find me" aria-label="Locate">📍</button>
+  <button class="fab accent" id="menuBtn" title="Layers &amp; legend" aria-label="Menu">☰</button>
+</div>
+
+<div class="drawer-scrim" id="scrim"></div>
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="grab"></div>
+
+  <h2>Base map</h2>
+  <div id="baseRows"></div>
+
+  <h2>Overlays</h2>
+  <div id="overlayRows"></div>
+
+  <h2>Ground truth · Aug 2025 field trip</h2>
+  <div id="gtRows"></div>
+
+  <h2>Legend</h2>
+  <div id="legend"></div>
+
+  <h2>About &amp; data sources</h2>
+  <div class="about">
+    <p><b>AuraOpal</b> is an offline-first field map for the <b>Opalton boulder-opal field</b>, Central-West
+    Queensland. It plots Steven's Aug 2025 ground-truth finds against the geology, geophysics and mining-tenement
+    layers that drive boulder-opal favourability. v0.1 shows the <i>raw</i> data honestly — it does <b>not</b>
+    predict where opal is. Favourability scoring is deliberately deferred.</p>
+    <div class="src-list" id="srcList"></div>
+    <p class="pop-adv" style="color:#f0b06a">⚠ Fossicking / mining legality shown is advisory only, derived from
+    public tenement data. Always verify tenure and permissions with the Queensland Government before entering or
+    digging on any ground. Aboriginal cultural heritage applies everywhere in Queensland and is <b>not</b> shown
+    here — check the Cultural Heritage Duty of Care Guidelines separately.</p>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ============================================================================
+   AuraOpal — v0.1
+   Offline-first boulder-opal prospecting field map for Opalton, CW Queensland.
+   Sibling of AuraGold (github.com/banksiasprings/auragold) — same Leaflet + SW
+   + basemap-toggle + offline-bundling pattern, built fresh for the opal domain
+   (excavation geology, not metal detection).
+   BUMP APP_VERSION in lockstep with SHELL_REV in sw.js on every deploy.
+   ============================================================================ */
+var APP_VERSION = 'v0.1';
+
+// ---- Study area -----------------------------------------------------------
+// Opalton field bbox ≈ 142.5–143.0°E, 23.5–24.0°S. Steven's claim ≈ 142.735, −23.748.
+var OPALTON = [-23.7483, 142.7346];          // [lat, lon] — claim centroid
+var CLAIM_ZOOM = 15;
+// ~50 km buffer around the field, used to clip the magnetics overlay so it never
+// paints the whole national grid across the screen.
+var MAG_BOUNDS = L.latLngBounds([[-24.20, 142.24], [-23.29, 143.23]]);
+
+// ---- Ground-truth data (Steven's Google Earth KML, Aug 2025 field trip) -----
+// Verbatim from ~/Documents/wikis/prospecting/opalton_aug2025_analysis.md.
+// Source coords are (lon, lat); Leaflet wants [lat, lon] — converted inline.
+var CLAIM = [ // "Canadian mining claim" polygon, ~15 ha, long axis NNE–SSW
+  [-23.7444, 142.7344], [-23.7448, 142.7365], [-23.7495, 142.7358],
+  [-23.7519, 142.7334], [-23.7473, 142.7327], [-23.7466, 142.7340]
+];
+
+// type ∈ gem | red | potch | patch  → colour-coded per Steven's descriptions.
+var FINDS = [
+  { n:1,  type:'potch', name:'Potchy opal (little colour)', ll:[-23.7471,142.7361], depth:'surface + fault',
+    note:'Lots of opal in ironstone layer WEST of fault, some IN fault, ~3 m² area.' },
+  { n:2,  type:'gem',   name:'Gem opal (in mullock)',       ll:[-23.7477,142.7333], depth:'surface',
+    note:'Mullock / spoil find.' },
+  { n:3,  type:'gem',   name:'Gem opal (in mullock)',       ll:[-23.7476,142.7338], depth:'surface',
+    note:'Mullock / spoil find.' },
+  { n:4,  type:'gem',   name:'Gem opal (in situ)',          ll:[-23.7472,142.7335], depth:'4 m',
+    note:'On false white clay.' },
+  { n:5,  type:'potch', name:'Potch opal',                  ll:[-23.7474,142.7332], depth:'4 m',
+    note:'4 m below surface.' },
+  { n:6,  type:'potch', name:'Potch opal (boulder)',        ll:[-23.7477,142.7336], depth:'8 m',
+    note:'Isolated boulder in situ — deepest horizon.' },
+  { n:7,  type:'patch', name:'Opal in mullock',             ll:[-23.7466,142.7355], depth:'surface',
+    note:'Small piece on ground.' },
+  { n:8,  type:'patch', name:'Small piece of opal',         ll:[-23.7501,142.7338], depth:'30 cm',
+    note:'Topsoil, in situ.' },
+  { n:9,  type:'red',   name:'Red opal',                    ll:[-23.7471,142.7335], depth:'—',
+    note:'No depth annotation in KML.' },
+  { n:'★',type:'gem',   name:'Gem opal (surface)',          ll:[-23.7476,142.7334], depth:'surface',
+    note:'On surface level in mullock, edge of trench.' }
+];
+
+var FAULTS = { // 3 markers clustered at the eastern edge of the claim
+  points: [ [-23.7468,142.7363], [-23.7473,142.7360] ],
+  lines:  [ [ [-23.7472,142.7360], [-23.7468,142.7363] ] ] // NE-trending
+};
+
+var TRENCHES = [ // 6 excavation line-strings, oriented ~NE–SW (parallel to the fault)
+  [ [-23.7466,142.7362], [-23.7452,142.7344] ],
+  [ [-23.7471,142.7361], [-23.7457,142.7342] ],
+  [ [-23.7483,142.7360], [-23.7464,142.7330] ],
+  [ [-23.7491,142.7358], [-23.7475,142.7333] ],
+  [ [-23.7516,142.7336], [-23.7508,142.7331] ],
+  [ [-23.7462,142.7348], [-23.7468,142.7347] ]  // near fault
+];
+
+var FIND_COLORS = { gem:'#22c55e', red:'#ef4444', potch:'#92531f', patch:'#f59e0b' };
+var FIND_LABELS = { gem:'Gem opal', red:'Red opal', potch:'Potch', patch:'Patch / indeterminate' };
+
+// ---- Map + panes ----------------------------------------------------------
+var map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 18, minZoom: 6 })
+  .setView(OPALTON, CLAIM_ZOOM);
+map.zoomControl.setPosition('topright');
+
+// z-order: bases < mag < winton < tenements < faults/trenches/claim < finds
+['p-sat','p-topo','p-minimal','p-mag','p-winton','p-tenement','p-struct','p-claim','p-finds']
+  .forEach(function(p, i) { map.createPane(p); map.getPane(p).style.zIndex = 200 + i * 20; });
+map.getPane('p-finds').style.zIndex = 650; // above markerPane default
+
+// ---- Base maps ------------------------------------------------------------
+var baseSat = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  { attribution: 'Imagery © Esri', maxZoom: 18, noWrap: true, pane: 'p-sat' });
+var baseTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+  { attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17, noWrap: true, pane: 'p-topo' });
+// ⬜ Minimal — solid near-white fill, rendered client-side (no tiles, instant offline).
+var baseMinimal = L.gridLayer({ pane: 'p-minimal', noWrap: true });
+baseMinimal.createTile = function () {
+  var t = document.createElement('div'); t.style.width = t.style.height = '256px';
+  t.style.background = '#efece4'; return t;
+};
+var BASES = {
+  sat:     { name: 'Satellite (Esri)',   sw: '#3a5a6b', layer: baseSat },
+  topo:    { name: 'Topographic',        sw: '#7a8b6b', layer: baseTopo },
+  minimal: { name: '⬜ Minimal (blank)',  sw: '#efece4', layer: baseMinimal }
+};
+baseSat.addTo(map);
+var activeBase = 'sat';
+
+// ---- Overlays -------------------------------------------------------------
+// Magnetics (TMI-RTP) — GA national geophysical grids WMS. Runtime-cached by the SW
+// on view. Clipped to the Opalton buffer so it reads as a local anomaly map, not a
+// whole-continent wash. This is a RAW geophysical signal, not a favourability forecast.
+var layerMag = L.tileLayer.wms('https://services.ga.gov.au/gis/geophysical-grids/wms', {
+  layers: 'geophys:magmap_v7_2019_RTP', format: 'image/png', transparent: true,
+  opacity: 0.55, pane: 'p-mag', maxZoom: 18, maxNativeZoom: 13, noWrap: true,
+  bounds: MAG_BOUNDS, attribution: 'Magnetics TMI-RTP © Geoscience Australia (CC-BY 4.0)'
+});
+
+// Winton Formation footprint (bundled GeoJSON — QLD state surface geology, ru_name='Winton Formation').
+var layerWinton = null;
+function loadWinton(cb) {
+  if (layerWinton) { if (cb) cb(); return; }
+  fetch('data/winton_formation.geojson').then(function(r){ return r.json(); }).then(function(gj){
+    layerWinton = L.geoJSON(gj, {
+      pane: 'p-winton',
+      style: { color: '#7c5cff', weight: 1, fillColor: '#7c5cff', fillOpacity: 0.14 },
+      onEachFeature: function(f, ly) {
+        var p = f.properties || {};
+        ly.bindPopup('<div class="pop-title">🪨 ' + (p.ru_name || 'Winton Formation') + '</div>' +
+          '<div class="pop-kv">Symbol ' + (p.map_symbol || 'Kw') + ' · ' + (p.age || 'Cretaceous') + '</div>' +
+          '<div class="pop-note">' + (p.lith_summary || 'Labile sandstone, siltstone, mudstone') + '</div>' +
+          '<div class="pop-adv">Boulder-opal host rock. Opal forms in the weathered ironstone/claystone profile ' +
+          'within this unit — presence of Winton Fm is necessary but not sufficient.</div>');
+      }
+    });
+    if (cb) cb();
+  }).catch(function(e){ console.warn('Winton load failed', e); if (cb) cb(); });
+}
+
+// Mining tenements (bundled GeoJSON — QLD MineralTenement). This is BOTH the legal-status
+// overlay and the historical-activity proxy. Opal is worked under Mining Leases (ML) and
+// Mining Claims (MC); EPMs are exploration only.
+var layerTen = null;
+function tenStyle(f) {
+  var p = f.properties || {}, isML = /Mining lease|Mining claim/i.test(p.tentype || '');
+  var isOpal = (p.tenmineral || '').indexOf('OP') !== -1;
+  return {
+    color: isML ? '#dc2626' : '#38bdf8',
+    weight: isML ? 1.6 : 1,
+    dashArray: isML ? null : '4 3',
+    fillColor: isOpal ? '#f59e0b' : (isML ? '#dc2626' : '#38bdf8'),
+    fillOpacity: isML ? 0.16 : 0.06
+  };
+}
+function loadTenements(cb) {
+  if (layerTen) { if (cb) cb(); return; }
+  fetch('data/tenements_opalton.geojson').then(function(r){ return r.json(); }).then(function(gj){
+    layerTen = L.geoJSON(gj, {
+      pane: 'p-tenement', style: tenStyle,
+      onEachFeature: function(f, ly) {
+        var p = f.properties || {};
+        var isML = /Mining lease|Mining claim/i.test(p.tentype || '');
+        var adv = isML
+          ? 'Active/registered mining tenure — the holder controls this ground. You need the holder\'s permission to enter or fossick.'
+          : 'Exploration permit — does not by itself grant a right to fossick or mine here. Verify access separately.';
+        ly.bindPopup('<div class="pop-title">⛏ ' + (p.tenname || 'Tenement') + '</div>' +
+          '<div class="pop-kv">' + (p.tentype || '') + ' · ' + (p.tenstatus || '') + '</div>' +
+          '<div class="pop-kv">Mineral: ' + (p.tenmineral || '—') + (
+            (p.tenmineral||'').indexOf('OP')!==-1 ? ' <span class="pop-chip" style="background:#f59e0b">OPAL</span>' : '') + '</div>' +
+          (p.tenowner ? '<div class="pop-note">' + p.tenowner + '</div>' : '') +
+          '<div class="pop-adv">' + adv + '</div>');
+      }
+    });
+    if (cb) cb();
+  }).catch(function(e){ console.warn('Tenement load failed', e); if (cb) cb(); });
+}
+
+// ---- Ground-truth vector layers (always available, no fetch) ---------------
+var claimLayer = L.polygon(CLAIM, { pane: 'p-claim', color: '#14b8a6', weight: 2.5,
+  fillColor: '#14b8a6', fillOpacity: 0.05, dashArray: '6 4' })
+  .bindPopup('<div class="pop-title">📐 Steven\'s claim</div>' +
+    '<div class="pop-kv">~15 ha · long axis NNE–SSW</div>' +
+    '<div class="pop-note">Aug 2025 field trip. Best gem/red opal clusters in the western part; ' +
+    'fault-adjacent finds run potchy.</div>');
+
+var structLayer = L.layerGroup([], { pane: 'p-struct' });
+FAULTS.lines.forEach(function(ln){
+  L.polyline(ln, { pane:'p-struct', color:'#ef4444', weight:3, opacity:.9 })
+    .bindPopup('<div class="pop-title">⚡ Fault (NE-trending)</div>' +
+      '<div class="pop-note">Eastern edge of claim. Steven: fractures carry silica water but tend to make ' +
+      'patch/potch, not top colour.</div>').addTo(structLayer);
+});
+FAULTS.points.forEach(function(pt){
+  L.circleMarker(pt, { pane:'p-struct', radius:6, color:'#fff', weight:2, fillColor:'#ef4444', fillOpacity:1 })
+    .bindPopup('<div class="pop-title">⚡ Fault marker</div>').addTo(structLayer);
+});
+
+var trenchLayer = L.layerGroup([], { pane: 'p-struct' });
+TRENCHES.forEach(function(tr, i){
+  L.polyline(tr, { pane:'p-struct', color:'#fb923c', weight:4, opacity:.85 })
+    .bindPopup('<div class="pop-title">🚜 Trench ' + (i+1) + '</div>' +
+      '<div class="pop-note">Excavation, NE–SW — miners followed the fault structure.</div>').addTo(trenchLayer);
+});
+
+// Opal finds — faceted "gem" divIcons, colour-coded by type, with depth badge.
+function findIcon(f) {
+  var c = FIND_COLORS[f.type];
+  return L.divIcon({
+    className: '', iconSize: [24,24], iconAnchor: [12,12], popupAnchor: [0,-14],
+    html: '<div class="gem-marker" style="width:16px;height:16px;background:' + c + '"></div>'
+  });
+}
+var findsLayer = L.layerGroup([], { pane: 'p-finds' });
+FINDS.forEach(function(f){
+  L.marker(f.ll, { pane:'p-finds', icon: findIcon(f) })
+    .bindPopup('<div class="pop-title"><span class="pop-chip" style="background:' + FIND_COLORS[f.type] + '">' +
+      f.n + '</span>' + f.name + '</div>' +
+      '<div class="pop-kv">' + FIND_LABELS[f.type] + ' · depth: <b>' + f.depth + '</b></div>' +
+      '<div class="pop-note">' + f.note + '</div>')
+    .addTo(findsLayer);
+});
+
+// ---- Overlay + ground-truth registries (drive the drawer toggles) ----------
+var OVERLAYS = [
+  { k:'mag',     name:'Magnetics (TMI-RTP)', sub:'GA raw geophysics · ironstone signal', sw:'#c084fc',
+    on:false, get:function(){ return layerMag; }, lazy:null },
+  { k:'winton',  name:'Winton Formation',    sub:'Boulder-opal host rock (QLD geology)', sw:'#7c5cff',
+    on:true,  get:function(){ return layerWinton; }, lazy:loadWinton },
+  { k:'tenement',name:'Mining tenements',    sub:'Legality + activity (QLD MineralTenement)', sw:'#dc2626',
+    on:false, get:function(){ return layerTen; }, lazy:loadTenements }
+];
+var GROUNDTRUTH = [
+  { k:'claim',   name:'Claim polygon',     sub:'~15 ha, Aug 2025',           sw:'#14b8a6', on:true, layer: claimLayer },
+  { k:'finds',   name:'Opal finds (10)',   sub:'9 numbered + 1 surface gem', sw:'#22c55e', on:true, layer: findsLayer },
+  { k:'faults',  name:'Faults',            sub:'3 markers, NE-trending',     sw:'#ef4444', on:true, layer: structLayer },
+  { k:'trench',  name:'Trenches (6)',      sub:'Excavations, NE–SW',         sw:'#fb923c', on:true, layer: trenchLayer }
+];
+
+// ---- Drawer UI ------------------------------------------------------------
+var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
+function openDrawer(v){ drawer.classList.toggle('open', v); scrim.classList.toggle('open', v);
+  drawer.setAttribute('aria-hidden', v ? 'false' : 'true'); }
+document.getElementById('menuBtn').onclick = function(){ openDrawer(true); };
+scrim.onclick = function(){ openDrawer(false); };
+
+function toggleRow(sw, name, sub, checked, onChange) {
+  var row = document.createElement('div'); row.className = 'layer-row';
+  row.innerHTML =
+    '<label><span class="sw" style="background:' + sw + '"></span><span>' + name +
+      (sub ? '<span class="sub">' + sub + '</span>' : '') + '</span></label>' +
+    '<span class="sw-toggle"><input type="checkbox"' + (checked ? ' checked' : '') +
+      '><span class="track"></span><span class="knob"></span></span>';
+  row.querySelector('input').addEventListener('change', function(e){ onChange(e.target.checked); });
+  return row;
+}
+
+// Base map — single-select rows
+var baseRows = document.getElementById('baseRows');
+Object.keys(BASES).forEach(function(k){
+  var b = BASES[k];
+  var row = toggleRow(b.sw, b.name, '', k === activeBase, function(on){
+    if (!on) { // don't allow turning the active base off; re-check it
+      row.querySelector('input').checked = true; return;
+    }
+    map.removeLayer(BASES[activeBase].layer);
+    baseRows.querySelectorAll('input').forEach(function(i){ i.checked = false; });
+    row.querySelector('input').checked = true;
+    b.layer.addTo(map); activeBase = k;
+  });
+  baseRows.appendChild(row);
+});
+
+// Overlays — multi-select, lazy-loaded
+var overlayRows = document.getElementById('overlayRows');
+OVERLAYS.forEach(function(o){
+  var row = toggleRow(o.sw, o.name, o.sub, o.on, function(on){
+    function apply(){ var ly = o.get(); if (!ly) return;
+      if (on) ly.addTo(map); else map.removeLayer(ly); }
+    if (on && o.lazy && !o.get()) o.lazy(apply); else apply();
+  });
+  overlayRows.appendChild(row);
+  if (o.on) { if (o.lazy) o.lazy(function(){ var ly=o.get(); if(ly) ly.addTo(map); }); else { var ly=o.get(); if(ly) ly.addTo(map); } }
+});
+
+// Ground truth — multi-select, eager
+var gtRows = document.getElementById('gtRows');
+GROUNDTRUTH.forEach(function(g){
+  gtRows.appendChild(toggleRow(g.sw, g.name, g.sub, g.on, function(on){
+    if (on) g.layer.addTo(map); else map.removeLayer(g.layer);
+  }));
+  if (g.on) g.layer.addTo(map);
+});
+
+// ---- Legend ---------------------------------------------------------------
+document.getElementById('legend').innerHTML =
+  '<div class="legend-item"><span class="g gem-marker" style="background:#22c55e"></span> Gem opal</div>' +
+  '<div class="legend-item"><span class="g gem-marker" style="background:#ef4444"></span> Red opal</div>' +
+  '<div class="legend-item"><span class="g gem-marker" style="background:#92531f"></span> Potch (colourless)</div>' +
+  '<div class="legend-item"><span class="g gem-marker" style="background:#f59e0b"></span> Patch / indeterminate</div>' +
+  '<div class="legend-item"><span class="g" style="border:2px dashed #14b8a6;background:rgba(20,184,166,.1)"></span> Claim polygon</div>' +
+  '<div class="legend-item"><span class="g" style="background:#ef4444;height:4px"></span> Fault</div>' +
+  '<div class="legend-item"><span class="g" style="background:#fb923c;height:4px"></span> Trench (excavation)</div>' +
+  '<div class="legend-item"><span class="g" style="background:rgba(124,92,255,.25);border:1px solid #7c5cff"></span> Winton Fm (opal host)</div>' +
+  '<div class="legend-item"><span class="g" style="background:rgba(220,38,38,.2);border:1.5px solid #dc2626"></span> Mining lease / claim</div>' +
+  '<div class="legend-item"><span class="g" style="background:rgba(245,158,11,.4);border:1px solid #f59e0b"></span> Opal-mineral tenement</div>';
+
+document.getElementById('srcList').innerHTML =
+  '<b>Imagery</b> © Esri · <b>Topo</b> © OpenTopoMap (CC-BY-SA) · OSM contributors<br>' +
+  '<b>Geology</b> — Winton Formation, Geological Survey of Queensland, <i>State Surface Geology</i> (CC-BY 4.0)<br>' +
+  '<b>Magnetics</b> — TMI-RTP, Geoscience Australia national geophysical grids v7 2019 (CC-BY 4.0)<br>' +
+  '<b>Tenements</b> — QLD <i>Mineral Tenement</i>, Dept of Resources / GeoResGlobe (CC-BY 4.0)<br>' +
+  '<b>Ground truth</b> — Steven\'s Opalton field trip, Aug 2025 (Google Earth KML)';
+
+// ---- Locate ---------------------------------------------------------------
+var meMarker = null;
+document.getElementById('locateBtn').onclick = function(){
+  if (!navigator.geolocation) return;
+  map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
+};
+map.on('locationfound', function(e){
+  if (meMarker) map.removeLayer(meMarker);
+  meMarker = L.circleMarker(e.latlng, { radius: 8, color: '#fff', weight: 2, fillColor: '#2f7bff', fillOpacity: 1 })
+    .addTo(map).bindPopup('You are here');
+});
+
+// ---- Version badge + service worker ---------------------------------------
+document.getElementById('versionBadge').textContent = 'AuraOpal ' + APP_VERSION;
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('SW reg failed', e); });
+  });
+}
+</script>
+</body>
+</html>
