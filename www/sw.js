@@ -10,7 +10,7 @@
  * Bump SHELL_REV on every deploy so returning clients re-fetch the app shell.
  * Keep it in lockstep with APP_VERSION in index.html (the on-screen version badge).
  */
-const SHELL_REV = 'v0.1.2';
+const SHELL_REV = 'v0.1.3';
 const SHELL_CACHE = 'auraopal-shell-' + SHELL_REV;
 const TILE_CACHE = 'auraopal-tiles-v1';
 

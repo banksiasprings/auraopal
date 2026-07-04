@@ -106,6 +106,12 @@
   .strata-row .st-d { color: #9aa3b0; font-size: 11px; }
   .strata-row.opal { background: rgba(34,197,94,.08); }
   .strata-row.opal .st-t::after { content: ' 🪨'; }
+  .strata-row.keyrow { background: rgba(240,192,120,.12); border-top: 1px solid rgba(240,192,120,.25); }
+  .st-key { display: block; margin-top: 4px; font-size: 11px; font-weight: 600; color: #f0c088; line-height: 1.4; }
+  .formation { font-size: 12.5px; line-height: 1.55; color: #cdd3dc; margin: 4px 0 6px; }
+  .formation .src { color: #8b93a1; font-style: italic; }
+  .model-target { font-size: 12px; line-height: 1.5; color: #f0c088; background: rgba(240,192,120,.08);
+    border-left: 3px solid #e8a15a; border-radius: 4px; padding: 7px 10px; margin: 4px 0 8px; }
   .site-note { font-size: 12px; line-height: 1.5; color: #c7cdd6; margin: 4px 0; padding-left: 16px; text-indent: -12px; }
   .site-note::before { content: '▸ '; color: #14b8a6; }
   .site-flag { margin-top: 8px; font-size: 11.5px; color: #f0b06a; line-height: 1.5; }
@@ -184,7 +190,7 @@
    (excavation geology, not metal detection).
    BUMP APP_VERSION in lockstep with SHELL_REV in sw.js on every deploy.
    ============================================================================ */
-var APP_VERSION = 'v0.1.2';
+var APP_VERSION = 'v0.1.3';
 
 // ---- Study area -----------------------------------------------------------
 // The lease is the anchor (80% of the value). Opalton field bbox ≈ 142.5–143.0°E,
@@ -253,11 +259,22 @@ var STRATA = [ // top → bottom (typical uncapped profile); opal-forming horizo
   { c:'#c9b28a', t:'Sandstone (near-surface)', d:'pure sandstone in most dig areas — radar-friendly' },
   { c:'#7a4a28', t:'Ironstone layers ×3–4', d:'THE TARGET — opal forms in certain zones; bottom layer usually best', opal:true },
   { c:'#c9b28a', t:'Sandstone', d:'~1 m' },
-  { c:'#5b8bb0', t:'Basal clay (the dam)', d:'at the very BOTTOM, UNDER the target — dams silica-rich water; GPR images the ironstone above it, then stops here', opal:true }
+  { c:'#5b8bb0', t:'Basal clay (the dam)', d:'at the very BOTTOM, UNDER the target — dams silica-rich water; GPR images the ironstone above it, then stops here', opal:true,
+    key:'★ KEY predictor: clay-basement LOW POINTS pool silica-rich water — the ironstone right above them carries the thickest, best opal.' }
 ];
 // Uncommon variant Steven has seen but which is NOT the norm.
 var CAP_NOTE = 'Note: the clay is <b>basal</b> (bottom), not a cap. A <i>capping</i> clay ABOVE the ' +
   'sandstone is an uncommon variant Steven has seen — where it occurs it defeats GPR and you switch to ERT.';
+// How opal forms here — the mudstone→ironstone process (operator field notes, Aug 2025 trip).
+var FORMATION = 'The basal clay is the <b>key predictor of thick opal</b>, not just a bottom layer. ' +
+  'Where the clay basement dips into low points it dams silica-rich groundwater into pools. That ' +
+  'silica-rich water reacts with organic matter in the mudstone and converts it to <b>ironstone</b> ' +
+  '(silica-binding chemistry) — and the ironstone sitting <b>immediately above the clay basement</b> ' +
+  'carries the thickest, best-quality opal. Opal can form higher in the ironstone too, but thinner. ' +
+  'Proximity to the clay-basement pools sets <i>thickness</i>; colour is a separate axis.';
+var MODEL_TARGET = '🎯 <b>Future favourability model, take note:</b> the target is the clay-basement ' +
+  '<b>TOPOGRAPHY</b> — the low points where water pools — more than the raw depth-to-clay. Opal ' +
+  'thickness tracks proximity to those basement pools.';
 var PATTERNS = [
   'Best gem/red opal clusters in a ~40×40 m box WEST of the fault, at ~4 m depth.',
   'Fault-adjacent finds run potchy — fractures carry silica water but tend to make patch, not colour.',
@@ -544,11 +561,16 @@ GROUNDTRUTH.forEach(function(g){
   h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:6px 0 3px">Stratigraphy (top → bottom)</div>';
   h += '<div class="strata">';
   STRATA.forEach(function(s){
-    h += '<div class="strata-row' + (s.opal ? ' opal' : '') + '"><span class="band" style="background:' + s.c + '"></span>' +
-      '<span><span class="st-t">' + s.t + '</span><br><span class="st-d">' + s.d + '</span></span></div>';
+    h += '<div class="strata-row' + (s.opal ? ' opal' : '') + (s.key ? ' keyrow' : '') + '">' +
+      '<span class="band" style="background:' + s.c + '"></span>' +
+      '<span><span class="st-t">' + s.t + '</span><br><span class="st-d">' + s.d + '</span>' +
+      (s.key ? '<span class="st-key">' + s.key + '</span>' : '') + '</span></div>';
   });
   h += '</div>';
   h += '<div style="font-size:11.5px;line-height:1.5;color:#9aa3b0;margin:2px 0 2px">' + CAP_NOTE + '</div>';
+  h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:10px 0 3px">How opal forms here</div>';
+  h += '<div class="formation">' + FORMATION + ' <span class="src">— from the operator\'s field notes, Aug 2025 trip.</span></div>';
+  h += '<div class="model-target">' + MODEL_TARGET + '</div>';
   h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:8px 0 3px">Ground-truth patterns</div>';
   PATTERNS.forEach(function(p){ h += '<div class="site-note">' + p + '</div>'; });
   h += '<div class="site-flag">🛰 <b>Imagery:</b> Esri World Imagery (~z18 native, over-zoomed to 19). ' +

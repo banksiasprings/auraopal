@@ -23,6 +23,7 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
 
 | Version | What | Where |
 |---|---|---|
+| **v0.1.3** | 🧪 Opal-formation model in Site info. The basal clay is **the key predictor of thick opal**: clay-basement low points pool silica-rich water → mudstone converts to ironstone → thickest opal sits immediately above the basement. New "How opal forms here" paragraph (cited to operator field notes) + a ★ KEY annotation on the basal-clay stratigraphy row + a flagged **future-model target: clay-basement TOPOGRAPHY (low points), not depth-to-clay.** Site-info panel only (+ version bump so the SW pushes it). | `www/index.html` site-info · CLAUDE.md domain notes |
 | **v0.1.2** | 🩹 GPR-verdict correction (stratigraphy fix from Steven). The clay is **basal** (UNDER the ironstone target), not a cap — so GPR images the target through the sandstone and only dies beneath it. **GPR is now the top pick for typical uncapped-sandstone dig areas; ERT for capped/unknown-cap sites.** Updated the research doc's GPR section + fit table, the site-info geophysics one-liner + stratigraphy diagram (clay labelled basal; capping-clay flagged as an uncommon variant). | `research/` §Active techniques · `www/index.html` site-info |
 | **v0.1.1** | 🎯 **Lease-first.** Default view zooms to Steven's claim (z16). Added: **10 m contours** (QLD SRTM, bundled offline, clipped to the lease — NO LiDAR 1m/5m exists over remote Opalton), **Hillshade** (Esri), and two honest geophysics-enhancement overlays — **Radiometrics ternary** (`radmap_v4_2019_filtered_ternary_image`, the "moderate weathering signal, often > mag here") and **Magnetics 1VD** (`magmap_v7_2019_1VD`, shallow/structural filter). Brighter claim boundary. New **📋 Site info** panel: stratigraphy column + ground-truth patterns + honest imagery/terrain/photo/geophysics notes. Satellite over-zoom to z19. Field photos: the Aug 2025 KML's photos didn't survive the upload purge (re-export needed). | `www/index.html` · `research/` (Active exploration techniques) |
 | **v0.1** | 🪨 First build. 3 basemaps (Satellite default / Topographic / ⬜ Minimal). Steven's Aug 2025 ground truth: claim polygon (~15 ha), 10 opal finds colour-coded by type (gem=green, red=red, potch=brown, patch=amber), 3 fault markers, 6 trench excavations. Winton Formation footprint (QLD geology). GA magnetics (TMI-RTP) heatmap clipped to a ~50 km buffer. QLD mining-tenement overlay (ML/MC/EPM, opal-mineral highlighted) as the legality+activity layer. Data-viz only — **no favourability scoring yet.** | `www/` · `research/opal_favourability_data_sources.md` |
@@ -61,13 +62,25 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
 
 ## Domain notes (boulder-opal favourability — for later scoring)
 Opal forms in the **weathered profile of the Winton Formation**: sandstone overburden → 3–4
-ironstone layers (bottom usually best) → sandstone → basal **clay layer** that dams silica-rich
-water. Steven's ground truth: best gem/red opal clusters in a ~40×40 m box **west of the fault**
-at ~4 m depth; **fault-adjacent finds run potchy** (fractures carry water but make patch, not
-colour). Depth stratification is real (0.3 m surface → 4 m in situ → 8 m isolated boulders).
-Favourability drivers to model later: Winton Fm extent (necessary), ironstone (→ magnetics),
-weathering/clay (→ radiometrics K/Th/U), clay-dam topographic pockets (→ DEM slope/drainage +
-Geofabric), structure (→ faults/lineaments), historical activity (→ tenement/claim density).
+ironstone layers (bottom usually best) → sandstone → basal **clay layer**. Steven's ground truth:
+best gem/red opal clusters in a ~40×40 m box **west of the fault** at ~4 m depth; **fault-adjacent
+finds run potchy** (fractures carry water but make patch, not colour). Depth stratification is real
+(0.3 m surface → 4 m in situ → 8 m isolated boulders).
+
+**THE opal-formation model (operator field notes, Aug 2025 — the crux of any favourability model):**
+the basal clay is the **key predictor of THICK opal, not just a base layer.** Where the clay
+basement dips into **low points** it dams silica-rich groundwater into pools; that water reacts with
+organic matter in the mudstone and **converts mudstone → ironstone** (silica-binding chemistry). The
+ironstone sitting **immediately above the clay basement** carries the **thickest, best** opal; opal
+higher in the ironstone is thinner. **Thickness tracks proximity to the clay-basement pools; colour
+is a separate axis.** ⇒ **The future-model target is clay-basement TOPOGRAPHY (the low points where
+water pools), not raw depth-to-clay.** This is what a favourability model must estimate — and it's
+exactly why on-claim GPR/ERT (which image the basement surface) beat the basin geophysics.
+
+Favourability drivers to model later: Winton Fm extent (necessary), **clay-basement low-points /
+palaeo-lows (the primary thickness driver — needs high-res sub-surface: GPR/ERT, not SRTM)**,
+ironstone (→ magnetics), weathering/clay (→ radiometrics K/Th/U), structure (→ faults/lineaments),
+historical activity (→ tenement/claim density).
 
 ## Geophysics honesty (v0.1.1 — see `research/` "Active exploration techniques")
 Over Opalton: **airborne mag = weak** (coarse survey + low-Fe Winton ironstone, chemically unlike

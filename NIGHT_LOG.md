@@ -4,6 +4,31 @@ The long-form record. Newest at top. Read the tail before changing anything.
 
 ---
 
+## v0.1.3 — opal-formation model in Site info (2026-07-04)
+
+Steven's field insight — the crux of any future favourability model. The basal clay isn't just a
+base layer, it's **the key predictor of THICK opal**: where the clay basement dips into low points
+it dams silica-rich water into pools; that water + organic matter in the mudstone converts mudstone
+→ **ironstone** (silica-binding chemistry); the ironstone **immediately above the basement** carries
+the thickest, best opal. Thickness tracks **proximity to the clay-basement pools** — colour is a
+separate axis. The model target is therefore **clay-basement TOPOGRAPHY (low points), not raw
+depth-to-clay.**
+
+Site-info panel additions (no other code):
+- **★ KEY** annotation on the basal-clay stratigraphy row (gold-highlighted): "clay-basement LOW
+  POINTS pool silica-rich water — the ironstone right above them carries the thickest, best opal."
+- New **"How opal forms here"** paragraph capturing the mudstone→ironstone process, cited to the
+  operator's field notes (Aug 2025 trip).
+- A flagged **future-model target** callout: clay-basement topography (the low points), not
+  depth-to-clay.
+- Same insight folded into CLAUDE.md domain notes (defines the future model).
+
+Version bump v0.1.2 → **v0.1.3** — required so the service worker's SHELL_REV changes and existing
+installs actually re-fetch the shell (a shell content change with an unchanged SW would not
+propagate to Steven's phone). Site-info is content-only; no layer/JS wiring changed.
+
+---
+
 ## v0.1.2 — GPR-verdict correction (2026-07-04)
 
 Steven corrected the stratigraphy I'd mis-stated in v0.1.1: at Opalton the clay is **basal** —
