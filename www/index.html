@@ -184,7 +184,7 @@
    (excavation geology, not metal detection).
    BUMP APP_VERSION in lockstep with SHELL_REV in sw.js on every deploy.
    ============================================================================ */
-var APP_VERSION = 'v0.1.1';
+var APP_VERSION = 'v0.1.2';
 
 // ---- Study area -----------------------------------------------------------
 // The lease is the anchor (80% of the value). Opalton field bbox ≈ 142.5–143.0°E,
@@ -249,12 +249,15 @@ var FIND_LABELS = { gem:'Gem opal', red:'Red opal', potch:'Potch', patch:'Patch 
 // ---- Site info (stratigraphy + ground-truth patterns, from the Aug 2025 analysis) ----
 // Shown in the drawer's "Site info" panel. Steven's own field observations — the calibration
 // truth the whole app is anchored to.
-var STRATA = [ // top → bottom, with the opal-forming horizons flagged
-  { c:'#c9b28a', t:'Sandstone overburden', d:'up to a few metres' },
-  { c:'#7a4a28', t:'Ironstone layers ×3–4', d:'opal forms IN certain zones here — bottom layer usually best', opal:true },
+var STRATA = [ // top → bottom (typical uncapped profile); opal-forming horizons flagged
+  { c:'#c9b28a', t:'Sandstone (near-surface)', d:'pure sandstone in most dig areas — radar-friendly' },
+  { c:'#7a4a28', t:'Ironstone layers ×3–4', d:'THE TARGET — opal forms in certain zones; bottom layer usually best', opal:true },
   { c:'#c9b28a', t:'Sandstone', d:'~1 m' },
-  { c:'#5b8bb0', t:'Clay layer (the dam)', d:'impermeable — traps silica-rich water; clay-dam pockets = highest value', opal:true }
+  { c:'#5b8bb0', t:'Basal clay (the dam)', d:'at the very BOTTOM, UNDER the target — dams silica-rich water; GPR images the ironstone above it, then stops here', opal:true }
 ];
+// Uncommon variant Steven has seen but which is NOT the norm.
+var CAP_NOTE = 'Note: the clay is <b>basal</b> (bottom), not a cap. A <i>capping</i> clay ABOVE the ' +
+  'sandstone is an uncommon variant Steven has seen — where it occurs it defeats GPR and you switch to ERT.';
 var PATTERNS = [
   'Best gem/red opal clusters in a ~40×40 m box WEST of the fault, at ~4 m depth.',
   'Fault-adjacent finds run potchy — fractures carry silica water but tend to make patch, not colour.',
@@ -545,6 +548,7 @@ GROUNDTRUTH.forEach(function(g){
       '<span><span class="st-t">' + s.t + '</span><br><span class="st-d">' + s.d + '</span></span></div>';
   });
   h += '</div>';
+  h += '<div style="font-size:11.5px;line-height:1.5;color:#9aa3b0;margin:2px 0 2px">' + CAP_NOTE + '</div>';
   h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:8px 0 3px">Ground-truth patterns</div>';
   PATTERNS.forEach(function(p){ h += '<div class="site-note">' + p + '</div>'; });
   h += '<div class="site-flag">🛰 <b>Imagery:</b> Esri World Imagery (~z18 native, over-zoomed to 19). ' +
@@ -553,9 +557,9 @@ GROUNDTRUTH.forEach(function(g){
     'there is NO LiDAR 1 m/5 m out here. 1 m contours aren\'t available; 10 m is the ceiling.<br>' +
     '📷 <b>Field photos:</b> the Aug 2025 KML\'s photos didn\'t survive the upload purge. Re-export from ' +
     'Google Earth to <code>wikis/prospecting/</code> and they can be added.<br>' +
-    '📡 <b>Geophysics:</b> over Opalton, airborne mag is weak (coarse + low-Fe Winton ironstone), ' +
-    'radiometrics is a moderate weathering signal, and the real prize is high-res GPR/ERT over the ' +
-    'claim itself — see <code>research/</code> for the technique + cost breakdown.</div>';
+    '📡 <b>Geophysics:</b> GPR is the top pick for typical uncapped-sandstone dig areas (it images ' +
+    'the ironstone target above the basal clay); ERT for capped or unknown-cap sites; mag weak, ' +
+    'radiometrics moderate — see <code>research/</code> for the technique + cost breakdown.</div>';
   document.getElementById('siteInfo').innerHTML = h;
 })();
 

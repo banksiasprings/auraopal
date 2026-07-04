@@ -37,8 +37,10 @@ shell + bundled GeoJSON; map tiles and the GA geophysics WMS are cached on view)
 
 For which **active geophysical technique** to actually run over the claim (GPR vs ERT vs TDEM, with
 AUD costs), see [`research/opal_favourability_data_sources.md`](research/opal_favourability_data_sources.md)
-→ "Active exploration techniques". Short version: **ERT** is the best fit; GPR is killed by the
-basal clay.
+→ "Active exploration techniques". Short version: **GPR** is the top pick for typical
+uncapped-sandstone dig areas (the basal clay sits *under* the ironstone target, so radar images
+the target and only dies beneath it); **ERT** is the fallback where a capping clay is present or
+suspected.
 
 ## Structure
 

@@ -23,6 +23,7 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
 
 | Version | What | Where |
 |---|---|---|
+| **v0.1.2** | 🩹 GPR-verdict correction (stratigraphy fix from Steven). The clay is **basal** (UNDER the ironstone target), not a cap — so GPR images the target through the sandstone and only dies beneath it. **GPR is now the top pick for typical uncapped-sandstone dig areas; ERT for capped/unknown-cap sites.** Updated the research doc's GPR section + fit table, the site-info geophysics one-liner + stratigraphy diagram (clay labelled basal; capping-clay flagged as an uncommon variant). | `research/` §Active techniques · `www/index.html` site-info |
 | **v0.1.1** | 🎯 **Lease-first.** Default view zooms to Steven's claim (z16). Added: **10 m contours** (QLD SRTM, bundled offline, clipped to the lease — NO LiDAR 1m/5m exists over remote Opalton), **Hillshade** (Esri), and two honest geophysics-enhancement overlays — **Radiometrics ternary** (`radmap_v4_2019_filtered_ternary_image`, the "moderate weathering signal, often > mag here") and **Magnetics 1VD** (`magmap_v7_2019_1VD`, shallow/structural filter). Brighter claim boundary. New **📋 Site info** panel: stratigraphy column + ground-truth patterns + honest imagery/terrain/photo/geophysics notes. Satellite over-zoom to z19. Field photos: the Aug 2025 KML's photos didn't survive the upload purge (re-export needed). | `www/index.html` · `research/` (Active exploration techniques) |
 | **v0.1** | 🪨 First build. 3 basemaps (Satellite default / Topographic / ⬜ Minimal). Steven's Aug 2025 ground truth: claim polygon (~15 ha), 10 opal finds colour-coded by type (gem=green, red=red, potch=brown, patch=amber), 3 fault markers, 6 trench excavations. Winton Formation footprint (QLD geology). GA magnetics (TMI-RTP) heatmap clipped to a ~50 km buffer. QLD mining-tenement overlay (ML/MC/EPM, opal-mineral highlighted) as the legality+activity layer. Data-viz only — **no favourability scoring yet.** | `www/` · `research/opal_favourability_data_sources.md` |
 
@@ -73,8 +74,11 @@ Over Opalton: **airborne mag = weak** (coarse survey + low-Fe Winton ironstone, 
 the Mt Isa ore country the surveys were flown for — keep it for structure/lineaments only, hence
 the 1VD enhancement layer); **radiometrics = moderate** (real weathering/silicification proxy —
 the better free layer); **the real prize = high-res GPR or ERT over the claim itself.** Research
-verdict: **ERT** is the best-fit technique (clay-conductive vs ironstone-resistive contrast is a
-direct match, reaches 5–8 m, ~AUD 2–4k/day indicative); **GPR is killed by the basal clay**;
+verdict (corrected v0.1.2): **GPR is the top pick for Steven's typical dig conditions** — the clay
+is **basal** (UNDER the ironstone target), so GPR fires through the near-surface sandstone, images
+the ironstone target, and only dies at the clay *beneath* it; it fails only in the minority case
+where clay **caps** the sandstone above the target. **ERT is the best-in-class fallback for capped
+or unknown-cap ground** (clay-conductive vs ironstone-resistive, ~AUD 2–4k/day indicative).
 Rio Tinto's "ute-dragged" tool is most likely a towed ground-TEM/EM conductivity array (moderate
 confidence — could not confirm a specific Rio density mapper). East-vs-west Eromanga margin: east
 favoured for geological reasons (shallow weathered Winton Fm), west likely deeper/less-weathered —

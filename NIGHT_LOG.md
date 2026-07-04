@@ -4,6 +4,31 @@ The long-form record. Newest at top. Read the tail before changing anything.
 
 ---
 
+## v0.1.2 — GPR-verdict correction (2026-07-04)
+
+Steven corrected the stratigraphy I'd mis-stated in v0.1.1: at Opalton the clay is **basal** —
+at the very bottom, UNDER the opal-bearing ironstone target — not a cap over the sandstone. Most
+dig areas are pure sandstone near-surface → ironstone (target) → basal clay. Only a minority carry
+a capping clay above the sandstone.
+
+That flips the GPR verdict: GPR fires through the radar-friendly sandstone, **images the ironstone
+target**, and only then dies at the basal clay *beneath* the target — which is fine, the target is
+already imaged. GPR only fails in the minority capped-clay case. So **GPR is the top pick for
+Steven's typical (uncapped) dig conditions** — higher resolution at shallow depth, cheaper per
+site, walk-behind/ute-dragged, direct 2-D/3-D image. **ERT drops to best-in-class fallback for
+capped or unknown-cap ground.**
+
+Correction pass (no new research):
+- `research/opal_favourability_data_sources.md` — rewrote the Section-A premise, the GPR section
+  (header + clay paragraph), the fit table (GPR verdict + ERT verdict), the bottom line, the ERT
+  header, and the honest-verdict blockquote.
+- `www/index.html` site-info — new geophysics one-liner ("GPR top pick for uncapped … ERT for
+  capped … mag weak, radiometrics moderate"); stratigraphy diagram clay row relabelled **basal**
+  (bottom, under the target) + a CAP_NOTE flagging capping-clay as an uncommon variant.
+- CLAUDE.md / README / this log corrected. v0.1.1 → **v0.1.2**.
+
+---
+
 ## v0.1.1 — lease-first + terrain + honest geophysics (2026-07-04)
 
 Steven's mid-build asks: focus 80% on his mining lease; add best-available terrain; be honest
@@ -31,10 +56,10 @@ about magnetics; research active geophysical techniques for shallow (5–8 m) bo
   Site info with the re-export path. Nothing fabricated.
 
 ### Research (appended to `research/opal_favourability_data_sources.md`, 203→360 lines, all preserved)
-- **Active exploration techniques** — GPR (killed by basal clay), ERT (**best fit** — clay/ironstone
-  resistivity contrast, 5–8 m, ~AUD 2–4k/day), TDEM, passive seismic, reflection seismic, + a
-  fit/cost table. Rio Tinto "ute-dragged" tool = most likely a towed ground-TEM/EM array (moderate
-  confidence; no specific Rio density mapper confirmed).
+- **Active exploration techniques** — GPR, ERT (clay/ironstone resistivity contrast, 5–8 m,
+  ~AUD 2–4k/day), TDEM, passive seismic, reflection seismic, + a fit/cost table. Rio Tinto
+  "ute-dragged" tool = most likely a towed ground-TEM/EM array (moderate confidence; no specific
+  Rio density mapper confirmed). *(GPR-vs-ERT ranking corrected in v0.1.2 — see above.)*
 - **Honest geophysics assessment** — mag weak / radiometrics moderate / GPR-ERT the real prize;
   which enhancement filters (RTP/1VD/tilt) the GA WMS already publishes.
 - **East-vs-west Eromanga margin** (v0.2+ note) — east favoured for geological reasons; west
