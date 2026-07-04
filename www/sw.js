@@ -13,7 +13,7 @@
 // Chip stays 'v0.1.3' (APP_VERSION), but the cache key gets a '-gt' suffix so this
 // ground-truth rebuild (KML v2: 18 finds + 12 field photos + mined polygon) actually
 // purges the previous v0.1.3 shell and re-fetches on installed clients.
-const SHELL_REV = 'v0.1.3-gt';
+const SHELL_REV = 'v0.1.3-ux';
 const SHELL_CACHE = 'auraopal-shell-' + SHELL_REV;
 const TILE_CACHE = 'auraopal-tiles-v1';
 

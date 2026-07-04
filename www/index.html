@@ -34,59 +34,92 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--ink); }
   #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: #0b1020; }
 
-  /* Version badge */
-  .version-badge {
-    position: absolute; left: 8px; bottom: 8px; z-index: 1000;
-    background: rgba(14, 116, 144, 0.92); color: #fff; font-size: 11px; font-weight: 700;
-    letter-spacing: .3px; padding: 3px 8px; border-radius: 6px; pointer-events: none;
-    box-shadow: 0 1px 4px rgba(0,0,0,.4);
-  }
+  /* ============ Controls — AuraGold layout, opal-teal accent (sisters, not clones) ============ */
+  /* Version badge — bottom-left, above the CTAs (AuraGold pattern) */
+  .version-badge { position: absolute; left: 14px; bottom: 118px; z-index: 1000; pointer-events: none;
+    font: 500 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: rgba(255,255,255,.85);
+    background: rgba(20,20,28,.55); padding: 1px 6px; border-radius: 5px; letter-spacing: .3px; }
 
-  /* Header title pill */
-  .app-title {
-    position: absolute; top: calc(8px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
-    background: var(--panel); color: #fff; padding: 7px 14px; border-radius: 999px; z-index: 900;
-    font-size: 13px; font-weight: 700; letter-spacing: .3px; display: flex; align-items: center; gap: 7px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.35); white-space: nowrap;
-  }
-  .app-title .dot { width: 9px; height: 9px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #a7f3d0, var(--opal-teal-2) 60%, #0369a1); box-shadow: 0 0 6px #14b8a6; }
+  /* Title pill (top-center) + status chip below it */
+  .title-pill { position: absolute; top: calc(8px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+    z-index: 900; background: rgba(20,20,28,.92); color: #fff; padding: 7px 14px; border-radius: 999px;
+    font: 800 13px -apple-system, sans-serif; letter-spacing: .3px; display: flex; align-items: center; gap: 7px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35); white-space: nowrap; }
+  .title-pill .dot { width: 9px; height: 9px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #a7f3d0, #14b8a6 60%, #0369a1); box-shadow: 0 0 6px #14b8a6; }
+  .status-chip { position: absolute; top: calc(45px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+    z-index: 900; background: rgba(20,20,28,.8); color: #a7f3d0; padding: 4px 11px; border-radius: 999px;
+    font: 700 11px -apple-system, sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,.3); white-space: nowrap; }
 
-  /* FAB stack (bottom-right) */
+  /* Signal-variant dropdown (top-left, below zoom) — mirrors AuraGold's VLF selector */
+  .var-sel { position: absolute; left: 10px; top: 96px; z-index: 1000; display: flex; align-items: center; gap: 5px;
+    background: #1f2430; color: #e8eaf0; border-radius: 11px; padding: 6px 9px; box-shadow: 0 2px 9px rgba(0,0,0,.32);
+    font: 800 11px -apple-system, sans-serif; }
+  .var-sel select { background: #2a3140; color: #e8eaf0; border: none; border-radius: 7px; padding: 4px 6px;
+    font: 700 12px -apple-system, sans-serif; cursor: pointer; }
+
+  /* Layer panel (top-right) — ported from AuraGold #layerPanel */
+  #layerPanel { position: absolute; top: 10px; right: 10px; z-index: 1200; display: flex; flex-direction: column; align-items: flex-end;
+    font: 13px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .lp-toggle { display: flex; align-items: center; gap: 7px; background: #1f2430; color: #2dd4bf; border: none; border-radius: 11px;
+    padding: 9px 12px; box-shadow: 0 2px 9px rgba(0,0,0,.32); cursor: pointer; font-weight: 800; font-size: 13px; }
+  .lp-toggle svg { width: 18px; height: 18px; display: block; }
+  .lp-body { display: none; margin-top: 7px; width: min(300px, calc(100vw - 20px)); max-height: 72vh; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; background: #fff; border-radius: 13px; box-shadow: 0 6px 22px rgba(0,0,0,.28); padding: 0 6px 6px; }
+  #layerPanel.open .lp-body { display: block; }
+  #layerPanel.open .lp-toggle { box-shadow: 0 2px 9px rgba(0,0,0,.32), 0 0 0 2px #2dd4bf inset; }
+  .lp-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #fff;
+    padding: 9px 4px 6px; z-index: 1; border-bottom: 1px solid #eee; }
+  .lp-head strong { font-size: 13.5px; color: #1f2430; }
+  .lp-x { background: none; border: none; font-size: 21px; line-height: 1; color: #888; cursor: pointer; padding: 0 2px; }
+  .lp-grp { font-weight: 800; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: #0e7490; padding: 9px 4px 3px; }
+  .lp-row { display: flex; align-items: center; gap: 7px; padding: 5px 3px; }
+  .lp-row + .lp-row { border-top: 1px solid #eef2f2; }
+  .lp-row input[type=checkbox] { width: 17px; height: 17px; flex: 0 0 auto; accent-color: #0e7490; margin: 0; }
+  .lp-sw { width: 14px; height: 14px; border-radius: 4px; flex: 0 0 auto; border: 1px solid rgba(0,0,0,.25); background-size: cover; background-position: center; }
+  .lp-sw.round { border-radius: 50%; }
+  .lp-name { flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lp-op { width: 60px; flex: 0 0 auto; accent-color: #0e7490; margin: 0; }
+  .lp-pct { width: 33px; flex: 0 0 auto; text-align: right; font-size: 11px; color: #777; font-variant-numeric: tabular-nums; }
+  .lp-row.off .lp-name { color: #9a9a9a; }
+  .lp-row.off .lp-op { opacity: .4; }
+  .lp-note { font-size: 10.5px; color: #6a7a80; padding: 8px 5px 2px; line-height: 1.45; border-top: 1px solid #eee; margin-top: 6px; }
+
+  /* Bottom-right FAB stack: 3D / Menu / Locate */
   .fab-stack { position: absolute; right: 12px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 1000;
     display: flex; flex-direction: column; gap: 10px; align-items: center; }
-  .fab { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer;
-    background: var(--panel); color: #fff; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.4);
-    display: flex; align-items: center; justify-content: center; }
+  .fab { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; background: rgba(20,20,28,.92); color: #fff;
+    font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; }
   .fab:active { transform: scale(.94); }
-  .fab.accent { background: var(--opal-teal); }
+  .fab.d3 { background: #123f44; color: #7fe3ff; }
 
-  /* Slide-up menu drawer */
-  .drawer-scrim { position: absolute; inset: 0; background: rgba(0,0,0,.45); z-index: 1200; opacity: 0;
-    pointer-events: none; transition: opacity .18s; }
-  .drawer-scrim.open { opacity: 1; pointer-events: auto; }
-  .drawer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1300; max-height: 82%; overflow-y: auto;
-    background: #14161d; color: #e8eaf0; border-radius: 16px 16px 0 0; transform: translateY(102%);
-    transition: transform .22s cubic-bezier(.2,.8,.2,1); box-shadow: 0 -4px 20px rgba(0,0,0,.5);
-    padding: 8px 16px calc(24px + env(safe-area-inset-bottom)); }
-  .drawer.open { transform: translateY(0); }
-  .drawer .grab { width: 40px; height: 4px; border-radius: 2px; background: #454b57; margin: 8px auto 12px; }
-  .drawer h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: #7c94a3; margin: 18px 0 8px; }
-  .drawer h2:first-of-type { margin-top: 4px; }
+  /* Bottom-left CTAs: Start survey (green) / Log a find (red) — AuraGold #detectBtn / #hitBtn */
+  .cta { position: absolute; left: 12px; z-index: 1000; border: none; cursor: pointer; color: #fff;
+    font: 700 14px/1 -apple-system, sans-serif; padding: 13px 16px; border-radius: 24px; box-shadow: 0 3px 10px rgba(0,0,0,.45);
+    display: flex; align-items: center; gap: 7px; -webkit-tap-highlight-color: transparent; }
+  .cta:active { transform: scale(.96); }
+  #findBtn { bottom: 18px; background: #c0392b; }
+  #surveyBtn { bottom: 66px; background: #1f8a3b; }
+  #surveyBtn.on { background: #b45309; }
 
-  .layer-row { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid #22252e; }
-  .layer-row:last-child { border-bottom: none; }
-  .layer-row label { flex: 1; font-size: 14px; display: flex; align-items: center; gap: 9px; cursor: pointer; }
-  .layer-row .sw { width: 15px; height: 15px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,.25); }
-  .layer-row .sub { display: block; font-size: 11px; color: #8b93a1; margin-top: 1px; }
-  /* iOS-style switch */
-  .sw-toggle { position: relative; width: 42px; height: 25px; flex: none; }
-  .sw-toggle input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
-  .sw-toggle .track { position: absolute; inset: 0; background: #3a3f4b; border-radius: 999px; transition: background .15s; }
-  .sw-toggle .knob { position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; background: #fff;
-    border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
-  .sw-toggle input:checked + .track { background: var(--opal-teal); }
-  .sw-toggle input:checked ~ .knob { transform: translateX(17px); }
+  /* Menu panel (right slide-in) — legend + site info + about */
+  .mp-scrim { position: absolute; inset: 0; background: rgba(0,0,0,.45); z-index: 1250; opacity: 0; pointer-events: none; transition: opacity .18s; }
+  .mp-scrim.open { opacity: 1; pointer-events: auto; }
+  .mp { position: absolute; top: 0; right: 0; bottom: 0; width: min(340px, 90vw); z-index: 1300; background: #14161d; color: #e8eaf0;
+    transform: translateX(102%); transition: transform .22s cubic-bezier(.2,.8,.2,1); box-shadow: -4px 0 20px rgba(0,0,0,.5);
+    overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 16px calc(24px + env(safe-area-inset-bottom)); }
+  .mp.open { transform: translateX(0); }
+  .mp-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: #14161d;
+    padding: 14px 0 10px; z-index: 1; border-bottom: 1px solid #262a34; }
+  .mp-head strong { font-size: 15px; }
+  .mp-x { background: none; border: none; font-size: 24px; color: #8b93a1; cursor: pointer; line-height: 1; }
+  .mp h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: #7c94a3; margin: 16px 0 8px; }
+
+  /* Toast */
+  .ag-toast { position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); z-index: 1400;
+    background: rgba(20,20,28,.94); color: #fff; padding: 10px 16px; border-radius: 10px; font: 600 13px -apple-system, sans-serif;
+    box-shadow: 0 2px 10px rgba(0,0,0,.4); opacity: 0; pointer-events: none; transition: opacity .2s; max-width: 80vw; text-align: center; }
+  .ag-toast.show { opacity: 1; }
 
   .legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 4px 2px; color: #d3d8e0; }
   .legend-item .g { width: 15px; height: 15px; flex: none; }
@@ -146,25 +179,53 @@
 <body>
 <div id="map"></div>
 <div class="version-badge" id="versionBadge"></div>
-<div class="app-title"><span class="dot"></span> AuraOpal · Opalton</div>
 
-<div class="fab-stack">
-  <button class="fab" id="locateBtn" title="Find me" aria-label="Locate">📍</button>
-  <button class="fab accent" id="menuBtn" title="Layers &amp; legend" aria-label="Menu">☰</button>
+<!-- Top-center: title pill + status chip -->
+<div class="title-pill"><span class="dot"></span> AuraOpal · Opalton</div>
+<div class="status-chip" id="statusChip">📍 18 finds · Aug 2025</div>
+
+<!-- Top-left (below zoom): primary-signal variant selector (mirrors AuraGold's VLF dropdown) -->
+<div class="var-sel" id="varSel" title="Primary signal overlay">
+  <span>Signal</span>
+  <select id="varSelect" aria-label="Primary signal overlay">
+    <option value="none">None</option>
+    <option value="rad">Radiometrics</option>
+    <option value="mag">Magnetics RTP</option>
+    <option value="1vd">Magnetics 1VD</option>
+    <option value="hill">Hillshade</option>
+  </select>
 </div>
 
-<div class="drawer-scrim" id="scrim"></div>
-<div class="drawer" id="drawer" aria-hidden="true">
-  <div class="grab"></div>
+<!-- Top-right: unified Layers panel (every layer, tickable, with a live opacity slider) -->
+<div id="layerPanel" aria-label="Map layers">
+  <button id="lpToggle" class="lp-toggle" type="button" aria-expanded="false" title="Map layers">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/><polyline points="2 12.5 12 19 22 12.5"/><polyline points="2 16.5 12 23 22 16.5"/></svg>
+    <span>Layers</span>
+  </button>
+  <div class="lp-body" id="lpBody" role="group" aria-label="Map layers list">
+    <div class="lp-head"><strong>Map layers</strong><button class="lp-x" id="lpClose" type="button" aria-label="Collapse">×</button></div>
+    <div id="lpList"></div>
+    <div class="lp-note" id="lpNote"></div>
+  </div>
+</div>
 
-  <h2>Base map</h2>
-  <div id="baseRows"></div>
+<!-- Bottom-right FAB stack: 3D / Menu / Locate -->
+<div class="fab-stack">
+  <button class="fab d3" id="btn3d" title="3D terrain" aria-label="3D">🌐</button>
+  <button class="fab" id="menuBtn" title="Menu · legend &amp; site info" aria-label="Menu">☰</button>
+  <button class="fab" id="locateBtn" title="Find me" aria-label="Locate">📍</button>
+</div>
 
-  <h2>Overlays</h2>
-  <div id="overlayRows"></div>
+<!-- Bottom-left CTAs -->
+<button class="cta" id="surveyBtn" type="button" title="Start a survey session"><span style="font-size:15px">🧭</span> <span id="surveyLbl">Start survey</span></button>
+<button class="cta" id="findBtn" type="button" title="Log a find at your GPS location"><span style="font-size:15px">🎯</span> Log a find!</button>
 
-  <h2>Ground truth · Aug 2025 field trip</h2>
-  <div id="gtRows"></div>
+<div class="ag-toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Menu panel (right slide-in): legend + site info + about -->
+<div class="mp-scrim" id="mpScrim"></div>
+<aside class="mp" id="menuPanel" aria-hidden="true">
+  <div class="mp-head"><strong>☰ Menu</strong><button class="mp-x" id="menuClose" aria-label="Close">×</button></div>
 
   <h2>📋 Site info · the lease</h2>
   <div id="siteInfo" class="about"></div>
@@ -185,7 +246,7 @@
     digging on any ground. Aboriginal cultural heritage applies everywhere in Queensland and is <b>not</b> shown
     here — check the Cultural Heritage Duty of Care Guidelines separately.</p>
   </div>
-</div>
+</aside>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -309,16 +370,20 @@ var PATTERNS = [
 ];
 
 // ---- Map + panes ----------------------------------------------------------
-var map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 18, minZoom: 6 })
+var map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 19, minZoom: 6 })
   .setView(OPALTON, CLAIM_ZOOM);
-map.zoomControl.setPosition('topright');
+map.zoomControl.setPosition('topleft');   // AuraGold pattern — zoom top-left, Layers top-right
 
 // z-order (bottom→top): bases < terrain (hillshade) < geophysics rasters (rad/mag/1vd)
-// < geology/tenure fills < contours < ground truth (trenches/faults/claim/finds).
+// < geology/tenure fills < mined < contours < ground truth (trenches/faults/claim/finds).
+// One pane per toggleable layer so each gets its own live opacity slider (AuraGold pattern).
 ['p-sat','p-topo','p-minimal','p-hill','p-rad','p-mag','p-1vd','p-winton','p-tenement',
- 'p-contour','p-struct','p-claim','p-finds']
+ 'p-mined','p-contour','p-fault','p-trench','p-claim','p-finds']
   .forEach(function(p, i) { map.createPane(p); map.getPane(p).style.zIndex = 200 + i * 15; });
 map.getPane('p-finds').style.zIndex = 650; // above markerPane default
+
+// Set a pane's opacity live (0..1) — drives every overlay's opacity slider (AuraGold pattern).
+function setPaneOpacity(paneId, v) { var p = map.getPane(paneId); if (p) p.style.opacity = v; }
 
 // ---- Base maps ------------------------------------------------------------
 // Highest free aerial over remote Opalton is Esri World Imagery, and its native ceiling HERE is
@@ -336,13 +401,7 @@ baseMinimal.createTile = function () {
   var t = document.createElement('div'); t.style.width = t.style.height = '256px';
   t.style.background = '#efece4'; return t;
 };
-var BASES = {
-  sat:     { name: 'Satellite (Esri)',   sw: '#3a5a6b', layer: baseSat },
-  topo:    { name: 'Topographic',        sw: '#7a8b6b', layer: baseTopo },
-  minimal: { name: '⬜ Minimal (blank)',  sw: '#efece4', layer: baseMinimal }
-};
-baseSat.addTo(map);
-var activeBase = 'sat';
+// (Base maps are driven by the unified Layers panel below — see LP config + buildPanel.)
 
 // ---- Overlays -------------------------------------------------------------
 // Magnetics (TMI-RTP) — GA national geophysical grids WMS. Runtime-cached by the SW
@@ -464,30 +523,30 @@ var claimLayer = L.polygon(CLAIM, { pane: 'p-claim', color: '#2dd4bf', weight: 3
 
 // Already-worked ground — muted grey fill + dashed border so it reads as "disturbed", distinct
 // from the teal claim outline.
-var minedLayer = L.polygon(MINED, { pane: 'p-tenement', color: '#cbd5e1', weight: 1.5,
+var minedLayer = L.polygon(MINED, { pane: 'p-mined', color: '#cbd5e1', weight: 1.5,
   fillColor: '#94a3b8', fillOpacity: 0.32, dashArray: '4 3' })
   .bindPopup('<div class="pop-title">⛏ Already mined</div>' +
     '<div class="pop-kv">"area mined to 1 m above 1st clay layer"</div>' +
     '<div class="pop-note">Worked ground in the main patch — dug down to ~1 m above the first clay ' +
     'layer. Shown so you can see what\'s already been turned over.</div>');
 
-var structLayer = L.layerGroup([], { pane: 'p-struct' });
+var structLayer = L.layerGroup([], { pane: 'p-fault' });
 FAULTS.lines.forEach(function(ln){
-  L.polyline(ln, { pane:'p-struct', color:'#ef4444', weight:3, opacity:.9 })
+  L.polyline(ln, { pane:'p-fault', color:'#ef4444', weight:3, opacity:.9 })
     .bindPopup('<div class="pop-title">⚡ Fault (NE-trending)</div>' +
       '<div class="pop-note">Eastern edge of claim. Steven: fractures carry silica water but tend to make ' +
       'patch/potch, not top colour.</div>').addTo(structLayer);
 });
 FAULTS.points.forEach(function(pt){
-  L.circleMarker(pt, { pane:'p-struct', radius:6, color:'#fff', weight:2, fillColor:'#ef4444', fillOpacity:1 })
+  L.circleMarker(pt, { pane:'p-fault', radius:6, color:'#fff', weight:2, fillColor:'#ef4444', fillOpacity:1 })
     .bindPopup('<div class="pop-title">⚡ Fault marker</div>').addTo(structLayer);
 });
 
-var trenchLayer = L.layerGroup([], { pane: 'p-struct' });
+var trenchLayer = L.layerGroup([], { pane: 'p-trench' });
 TRENCHES.forEach(function(tr){
   var potential = /potential/i.test(tr.name);
   var label = potential ? '🚜 Potential trench' : (/path/i.test(tr.name) ? '🛤 Path' : '🚜 Trench');
-  L.polyline(tr.seg, { pane:'p-struct', color: potential ? '#fdba74' : '#fb923c',
+  L.polyline(tr.seg, { pane:'p-trench', color: potential ? '#fdba74' : '#fb923c',
       weight: potential ? 3 : 4, opacity: potential ? 0.7 : 0.85, dashArray: potential ? '7 5' : null })
     .bindPopup('<div class="pop-title">' + label + '</div>' +
       '<div class="pop-note">' + (potential ? 'Marked as a potential dig line.' :
@@ -534,87 +593,141 @@ function showPhoto(src) {
   lb.style.display = 'flex';
 }
 
-// ---- Overlay + ground-truth registries (drive the drawer toggles) ----------
-var OVERLAYS = [
-  // Terrain (the lease)
-  { k:'contour', name:'Contours (10 m)',     sub:'QLD SRTM · no LiDAR out here', sw:'#e8a15a',
-    on:true,  get:function(){ return layerContours; }, lazy:loadContours },
-  { k:'hill',    name:'Hillshade',           sub:'Terrain relief (Esri)', sw:'#8a8f98',
-    on:false, get:function(){ return layerHill; }, lazy:null },
-  // Geology & tenure
-  { k:'winton',  name:'Winton Formation',    sub:'Boulder-opal host rock (QLD geology)', sw:'#7c5cff',
-    on:true,  get:function(){ return layerWinton; }, lazy:loadWinton },
-  { k:'tenement',name:'Mining tenements',    sub:'Legality + activity (QLD MineralTenement)', sw:'#dc2626',
-    on:false, get:function(){ return layerTen; }, lazy:loadTenements },
-  // Geophysics — RAW signals, not forecasts (see Site info for the honest read)
-  { k:'rad',     name:'Radiometrics (ternary)', sub:'Weathering signal · often > mag here', sw:'#22d3a0',
-    on:false, get:function(){ return layerRad; }, lazy:null },
-  { k:'mag',     name:'Magnetics (TMI-RTP)', sub:'Weak/coarse here — structure only', sw:'#c084fc',
-    on:false, get:function(){ return layerMag; }, lazy:null },
-  { k:'1vd',     name:'Magnetics (1VD)',     sub:'Shallow/structural enhancement filter', sw:'#a78bfa',
-    on:false, get:function(){ return layer1VD; }, lazy:null }
-];
-var GROUNDTRUTH = [
-  { k:'claim',   name:'Claim polygon',     sub:'~15 ha, Aug 2025',            sw:'#14b8a6', on:true, layer: claimLayer },
-  { k:'finds',   name:'Opal finds (18)',   sub:'7 with field photos 📷',      sw:'#22c55e', on:true, layer: findsLayer },
-  { k:'mined',   name:'Mined area',        sub:'Already worked (main patch)', sw:'#94a3b8', on:true, layer: minedLayer },
-  { k:'faults',  name:'Faults',            sub:'2 markers + line, NE-trend',  sw:'#ef4444', on:true, layer: structLayer },
-  { k:'trench',  name:'Trenches (8)',      sub:'Trench / potential / path',   sw:'#fb923c', on:true, layer: trenchLayer }
+// ============ Unified Layers panel (ported from AuraGold): grouped rows, live opacity,
+// localStorage persistence. One pane per layer → each row's slider drives that pane's opacity. ==
+var LY = (function(){ try { return JSON.parse(localStorage.getItem('ao_ly') || '{}'); } catch(e){ return {}; } })();
+function lySave(){ try { localStorage.setItem('ao_ly', JSON.stringify(LY)); } catch(e){} }
+function lyState(c){ var s = LY[c.k] || {}; return { on:(s.on != null ? s.on : c.on), op:(s.op != null ? s.op : c.op) }; }
+function lySet(k, patch){ LY[k] = Object.assign({}, LY[k], patch); lySave(); }
+
+// Config — group headers ({grp}) + layers. get() resolves the layer object (3 are fetched lazily).
+var LP = [
+  { grp:'Base map' },
+  { k:'sat',     pane:'p-sat',     get:function(){return baseSat;},     name:'Satellite (Esri)',    sw:'#3a5a6b', on:true,  op:100 },
+  { k:'topo',    pane:'p-topo',    get:function(){return baseTopo;},    name:'Topographic',         sw:'#7a8b6b', on:false, op:100 },
+  { k:'minimal', pane:'p-minimal', get:function(){return baseMinimal;}, name:'⬜ Minimal (blank)',  sw:'#efece4', on:false, op:100 },
+  { grp:'Terrain' },
+  { k:'contour', pane:'p-contour', get:function(){return layerContours;}, name:'Contours (10 m)', sw:'#e8a15a', on:true,  op:100 },
+  { k:'hill',    pane:'p-hill',    get:function(){return layerHill;},     name:'Hillshade',       sw:'linear-gradient(135deg,#6b6b6b,#e8e8e8)', on:false, op:65 },
+  { grp:'Geology & geophysics' },
+  { k:'winton',  pane:'p-winton',  get:function(){return layerWinton;}, name:'🪨 Winton Formation',     sw:'#7c5cff', on:true,  op:100 },
+  { k:'rad',     pane:'p-rad',     get:function(){return layerRad;},    name:'Radiometrics (ternary)',  sw:'linear-gradient(90deg,#c1440e,#2e8b57,#3a5fcd)', on:false, op:55 },
+  { k:'mag',     pane:'p-mag',     get:function(){return layerMag;},    name:'Magnetics (TMI-RTP)',     sw:'linear-gradient(90deg,#222,#bbb,#fff)', on:false, op:55 },
+  { k:'1vd',     pane:'p-1vd',     get:function(){return layer1VD;},    name:'Magnetics (1VD)',         sw:'linear-gradient(90deg,#4b0082,#eee,#8b0000)', on:false, op:55 },
+  { grp:'Legality' },
+  { k:'tenement',pane:'p-tenement',get:function(){return layerTen;},    name:'⛏ Mining tenements',     sw:'#dc2626', on:false, op:100 },
+  { grp:'Ground truth · Aug 2025' },
+  { k:'claim',   pane:'p-claim',   get:function(){return claimLayer;},  name:'📐 Claim polygon',        sw:'#2dd4bf', on:true, op:100 },
+  { k:'mined',   pane:'p-mined',   get:function(){return minedLayer;},  name:'⛏ Mined area',           sw:'#94a3b8', on:true, op:100 },
+  { k:'finds',   pane:'p-finds',   get:function(){return findsLayer;},  name:'🪨 Opal finds (18)',      sw:'#22c55e', round:true, on:true, op:100 },
+  { k:'trench',  pane:'p-trench',  get:function(){return trenchLayer;}, name:'🚜 Trenches (8)',         sw:'#fb923c', on:true, op:100 },
+  { k:'fault',   pane:'p-fault',   get:function(){return structLayer;}, name:'⚡ Faults',               sw:'#ef4444', on:true, op:100 }
 ];
 
-// ---- Drawer UI ------------------------------------------------------------
-var drawer = document.getElementById('drawer'), scrim = document.getElementById('scrim');
-function openDrawer(v){ drawer.classList.toggle('open', v); scrim.classList.toggle('open', v);
-  drawer.setAttribute('aria-hidden', v ? 'false' : 'true'); }
-document.getElementById('menuBtn').onclick = function(){ openDrawer(true); };
-scrim.onclick = function(){ openDrawer(false); };
-
-function toggleRow(sw, name, sub, checked, onChange) {
-  var row = document.createElement('div'); row.className = 'layer-row';
-  row.innerHTML =
-    '<label><span class="sw" style="background:' + sw + '"></span><span>' + name +
-      (sub ? '<span class="sub">' + sub + '</span>' : '') + '</span></label>' +
-    '<span class="sw-toggle"><input type="checkbox"' + (checked ? ' checked' : '') +
-      '><span class="track"></span><span class="knob"></span></span>';
-  row.querySelector('input').addEventListener('change', function(e){ onChange(e.target.checked); });
-  return row;
+var lpRowByKey = {};
+function buildPanel(){
+  var lpList = document.getElementById('lpList'); lpList.innerHTML = '';
+  LP.forEach(function(c){
+    if (c.grp){ var h=document.createElement('div'); h.className='lp-grp'; h.textContent=c.grp; lpList.appendChild(h); return; }
+    var st = lyState(c), ly = c.get();
+    setPaneOpacity(c.pane, st.op/100);
+    if (ly){ if (st.on && !map.hasLayer(ly)) ly.addTo(map); if (!st.on && map.hasLayer(ly)) map.removeLayer(ly); }
+    var row = document.createElement('div'); row.className = 'lp-row' + (st.on?'':' off');
+    row.innerHTML =
+      '<input type="checkbox"'+(st.on?' checked':'')+' aria-label="'+c.name+'">' +
+      '<span class="lp-sw'+(c.round?' round':'')+'" style="background:'+c.sw+'"></span>' +
+      '<span class="lp-name" title="'+c.name+'">'+c.name+'</span>' +
+      '<input type="range" class="lp-op" min="0" max="100" step="5" value="'+st.op+'" aria-label="'+c.name+' opacity">' +
+      '<span class="lp-pct">'+st.op+'%</span>';
+    var cb=row.querySelector('input[type=checkbox]'), sl=row.querySelector('input[type=range]'), pct=row.querySelector('.lp-pct');
+    cb.addEventListener('change', function(){
+      var l=c.get(); if (l){ if (cb.checked) l.addTo(map); else map.removeLayer(l); }
+      row.classList.toggle('off', !cb.checked); lySet(c.k, { on: cb.checked });
+      if (GEO_VARS.indexOf(c.k) >= 0) syncVarSelect();
+    });
+    sl.addEventListener('input', function(){
+      var v=+sl.value; pct.textContent=v+'%'; setPaneOpacity(c.pane, v/100); lySet(c.k, { op:v });
+    });
+    lpList.appendChild(row); lpRowByKey[c.k] = { c:c, cb:cb, row:row };
+  });
+  document.getElementById('lpNote').innerHTML = 'Tick a layer and drag its slider to set opacity — choices persist on this phone.';
+  syncVarSelect();
+}
+function lpSetLayer(k, on){
+  var e = lpRowByKey[k]; if (!e) return; var ly = e.c.get(); if (!ly) return;
+  if (on){ if (!map.hasLayer(ly)) ly.addTo(map); } else if (map.hasLayer(ly)) map.removeLayer(ly);
+  e.cb.checked = !!on; e.row.classList.toggle('off', !on); lySet(k, { on: !!on });
+}
+// When a lazily-fetched layer arrives, honour its persisted on/off + opacity.
+function reconcile(k){
+  var e = lpRowByKey[k]; if (!e) return; var c = e.c, st = lyState(c), ly = c.get(); if (!ly) return;
+  setPaneOpacity(c.pane, st.op/100);
+  if (st.on && !map.hasLayer(ly)) ly.addTo(map);
+  e.cb.checked = st.on; e.row.classList.toggle('off', !st.on);
 }
 
-// Base map — single-select rows
-var baseRows = document.getElementById('baseRows');
-Object.keys(BASES).forEach(function(k){
-  var b = BASES[k];
-  var row = toggleRow(b.sw, b.name, '', k === activeBase, function(on){
-    if (!on) { // don't allow turning the active base off; re-check it
-      row.querySelector('input').checked = true; return;
-    }
-    map.removeLayer(BASES[activeBase].layer);
-    baseRows.querySelectorAll('input').forEach(function(i){ i.checked = false; });
-    row.querySelector('input').checked = true;
-    b.layer.addTo(map); activeBase = k;
-  });
-  baseRows.appendChild(row);
-});
+var GEO_VARS = ['rad','mag','1vd','hill'];   // geophysics rasters — one shown at a time via Signal dropdown
+baseSat.addTo(map);                 // instant base while bundled layers fetch
+buildPanel();                        // panel builds immediately (robust — not gated on fetches)
+loadContours(function(){ reconcile('contour'); });
+loadWinton(function(){ reconcile('winton'); });
+loadTenements(function(){ reconcile('tenement'); });
 
-// Overlays — multi-select, lazy-loaded
-var overlayRows = document.getElementById('overlayRows');
-OVERLAYS.forEach(function(o){
-  var row = toggleRow(o.sw, o.name, o.sub, o.on, function(on){
-    function apply(){ var ly = o.get(); if (!ly) return;
-      if (on) ly.addTo(map); else map.removeLayer(ly); }
-    if (on && o.lazy && !o.get()) o.lazy(apply); else apply();
-  });
-  overlayRows.appendChild(row);
-  if (o.on) { if (o.lazy) o.lazy(function(){ var ly=o.get(); if(ly) ly.addTo(map); }); else { var ly=o.get(); if(ly) ly.addTo(map); } }
-});
+// Layer panel open/close
+var lpEl = document.getElementById('layerPanel');
+document.getElementById('lpToggle').addEventListener('click', function(){
+  lpEl.classList.toggle('open'); this.setAttribute('aria-expanded', lpEl.classList.contains('open')); });
+document.getElementById('lpClose').addEventListener('click', function(){ lpEl.classList.remove('open'); });
 
-// Ground truth — multi-select, eager
-var gtRows = document.getElementById('gtRows');
-GROUNDTRUTH.forEach(function(g){
-  gtRows.appendChild(toggleRow(g.sw, g.name, g.sub, g.on, function(on){
-    if (on) g.layer.addTo(map); else map.removeLayer(g.layer);
-  }));
-  if (g.on) g.layer.addTo(map);
+// Signal-variant dropdown (mirrors AuraGold's VLF selector) — show one geophysics raster at a time.
+document.getElementById('varSelect').addEventListener('change', function(){
+  var v = this.value; GEO_VARS.forEach(function(k){ lpSetLayer(k, v===k); });
+});
+function syncVarSelect(){
+  var on = GEO_VARS.filter(function(k){ return lyState({ k:k, on:false }).on; });
+  var sel = document.getElementById('varSelect'); if (sel) sel.value = (on.length===1 ? on[0] : 'none');
+}
+
+// Menu panel (right slide-in) — legend + site info + about
+var mpScrim = document.getElementById('mpScrim'), menuPanel = document.getElementById('menuPanel');
+function openMenu(v){ menuPanel.classList.toggle('open', v); mpScrim.classList.toggle('open', v);
+  menuPanel.setAttribute('aria-hidden', v?'false':'true'); }
+document.getElementById('menuBtn').addEventListener('click', function(){ openMenu(true); });
+document.getElementById('menuClose').addEventListener('click', function(){ openMenu(false); });
+mpScrim.addEventListener('click', function(){ openMenu(false); });
+
+// Toast
+var _toastT; function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(_toastT); _toastT=setTimeout(function(){ t.classList.remove('show'); }, 2600); }
+
+// 3D button — no terrain sidecar in AuraOpal yet; honest placeholder (visual parity with AuraGold).
+document.getElementById('btn3d').addEventListener('click', function(){ toast('🌐 3D terrain view is coming to AuraOpal — not wired yet.'); });
+
+// CTAs — Start survey (session timer) + Log a find (drop a GPS pin, saved on-device)
+var _survey = null;
+document.getElementById('surveyBtn').addEventListener('click', function(){
+  var lbl = document.getElementById('surveyLbl');
+  if (!_survey){ _survey = Date.now(); this.classList.add('on'); lbl.textContent='Surveying…'; toast('🧭 Survey started'); }
+  else { var mins=Math.round((Date.now()-_survey)/60000); _survey=null; this.classList.remove('on'); lbl.textContent='Start survey'; toast('🧭 Survey ended · '+mins+' min'); }
+});
+var myFinds = (function(){ try { return JSON.parse(localStorage.getItem('ao_myfinds') || '[]'); } catch(e){ return []; } })();
+var myFindsLayer = L.layerGroup().addTo(map);
+function renderMyFinds(){ myFindsLayer.clearLayers(); myFinds.forEach(function(f){
+  L.marker([f.lat,f.lon], { pane:'p-finds', icon: L.divIcon({ className:'', iconSize:[22,22], iconAnchor:[11,11],
+      html:'<div class="gem-marker" style="width:14px;height:14px;background:#22d3ee"></div>' }) })
+    .bindPopup('<div class="pop-title">🎯 My find</div><div class="pop-kv">'+new Date(f.t).toLocaleString()+'</div>')
+    .addTo(myFindsLayer);
+}); }
+renderMyFinds();
+document.getElementById('findBtn').addEventListener('click', function(){
+  if (!navigator.geolocation){ toast('No GPS on this device'); return; }
+  toast('🎯 Getting your location…');
+  navigator.geolocation.getCurrentPosition(function(p){
+    var f = { lat:+p.coords.latitude.toFixed(6), lon:+p.coords.longitude.toFixed(6), t:Date.now() };
+    myFinds.push(f); try { localStorage.setItem('ao_myfinds', JSON.stringify(myFinds)); } catch(e){}
+    renderMyFinds(); map.setView([f.lat,f.lon], Math.max(map.getZoom(), 17));
+    toast('🎯 Find logged ('+myFinds.length+' total)');
+  }, function(){ toast('Couldn\'t get a GPS fix'); }, { enableHighAccuracy:true, timeout:12000 });
 });
 
 // ---- Site info panel ------------------------------------------------------

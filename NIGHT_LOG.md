@@ -4,6 +4,42 @@ The long-form record. Newest at top. Read the tail before changing anything.
 
 ---
 
+## v0.1.3 (AuraGold UX port — sisters) — 2026-07-04
+
+Steven: "make it as identical as possible to AuraGold so we know they're sisters… the toggles
+aren't working properly." Read `~/Documents/auragold/index.html` (reference only) and ported its
+control layer. SW cache-rev → `v0.1.3-ux` (chip stays v0.1.3).
+
+- **Unified Layers panel (top-right)** ported from AuraGold's `#layerPanel`: a dark "Layers" button
+  (layer-stack SVG) opens a white panel with grouped rows (Base map / Terrain / Geology & geophysics
+  / Legality / Ground truth). **Every layer row = checkbox + colour swatch + name + live opacity
+  slider + %** — the polish Steven called out. Kept AuraOpal's opal-teal accent (sisters, not clones).
+- **Toggle wiring fixed** (Steven's flag). Root cause: the old ad-hoc drawer toggles didn't persist
+  and had a brittle single-select base hack. Rebuilt on AuraGold's exact pattern: one pane per layer
+  → each slider drives `setPaneOpacity(pane)`; every change writes `localStorage.ao_ly` ({on,op} per
+  key) and is re-applied on load. Verified: toggle add/removes the layer + dims the row; opacity
+  slider sets pane opacity live; state persists across reload.
+- **Button placement mirrors AuraGold**: zoom top-left, Layers top-right, "AuraOpal · Opalton" pill
+  top-centre + a "📍 18 finds · Aug 2025" status chip, a **Signal** variant dropdown top-left (mirrors
+  AuraGold's VLF selector — switches the active geophysics raster: Radiometrics / Mag-RTP / Mag-1VD /
+  Hillshade), bottom-right FAB stack (🌐 3D / ☰ Menu / 📍 Locate), bottom-left CTAs (green **Start
+  survey** = session timer, red **Log a find!** = drop a GPS pin saved to `localStorage.ao_myfinds`).
+- **3D button** is an honest placeholder (no terrain sidecar yet) — toasts "coming soon" (visual
+  parity without faking it).
+- **Menu** (right slide-in) now holds Legend + Site info + About/data-sources (layers moved out to
+  the panel, exactly like AuraGold).
+- Split panes so faults/trenches/mined each get independent opacity (`p-fault`/`p-trench`/`p-mined`).
+- **Data + geology untouched**: 18 finds, 12 photos, mined polygon, and the basal-clay-key-predictor
+  + false-clay-productive site-info corrections all survive (verified in source + render).
+- **Gotcha**: forgot to bump SHELL_REV at first → the SW served the stale shell and the panel came up
+  empty in testing. The built file was correct; bumping the rev + cache-busting the test URL fixed it.
+  Lesson: any shell change needs a SHELL_REV bump or installed clients keep the cache.
+- **Verified** (headless, SW-cleared, clean localStorage): 0 console errors; 5 groups / 15 rows / 15
+  opacity sliders; toggle+opacity+persistence work; defaults correct; variant dropdown switches
+  rasters; menu renders site-info (5 KB) + 12 legend items; 3D toast fires.
+
+---
+
 ## v0.1.3 (ground-truth rebuild from KML v2) — 2026-07-04
 
 Steven re-exported the full Google Earth KML (12 MB — the v1 I first got was a 10-pin subset).
