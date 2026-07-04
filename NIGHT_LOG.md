@@ -4,6 +4,34 @@ The long-form record. Newest at top. Read the tail before changing anything.
 
 ---
 
+## v0.1.3 (ground-truth rebuild from KML v2) — 2026-07-04
+
+Steven re-exported the full Google Earth KML (12 MB — the v1 I first got was a 10-pin subset).
+Re-ingested it. Ships under the same **v0.1.3** chip (SW cache-rev `v0.1.3-gt` forces the update).
+
+- **KML → data.** Copied to `~/Documents/wikis/prospecting/opal_mine_opalton_aug2025_v2.kml` +
+  `data/opal_mine_v2.kml`. Parsed with ElementTree (the photos are in `<Placemark><Carousel>
+  <Image><gx:imageUrl>`, NOT in `<description>` — that's why the first naive parse found nothing).
+- **18 opal-find pins** (was 10) — the dense **"main patch"** mid-claim (~142.7346°E, −23.7470°S)
+  was the gap. Rebuilt the inline FINDS with real coords + depths (parsed from desc) + KML altitude.
+- **12 field photos** extracted from 7 pins, resized ≤1024px (2.2 MB total) → `data/photos/opalton/`,
+  shown as thumbnails in pin popups + a full-screen tap-to-enlarge lightbox. Precached offline.
+  The 2 "Untitled overlay" GroundOverlays were degenerate (blank 43-byte world-box GIFs) — skipped.
+- **Mined-area polygon** ("area mined to 1m above 1st clay layer") — muted grey/dashed fill in the
+  main patch, its own toggle. Claim polygon + fault + 8 trenches (trench/potential/path) from the KML.
+- **Main-patch analysis**: ~50 m E of the western cluster, ~258 m alt = ~2 m shallower than ~256 m.
+- **False-clay geology correction** (Steven): false/intermediate clay layers are productive too
+  (smaller local dams), not "just structural" → ERT wins (maps all clay contrasts). Updated the
+  stratigraphy diagram, "How opal forms here", and the geophysics framing.
+- **Imagery**: found Esri's native ceiling over Opalton is **z17** (z18+ = 2.5 KB "no data"
+  placeholder) → capped `maxNativeZoom` 18→17 so deep zoom over-zooms real imagery, not blanks.
+- **Deploy hygiene**: `build_site.sh` now strips `*.kml` from `_site` (the 12 MB KML stays in the
+  repo for re-ingestion but isn't served). New analysis → `opalton_aug2025_analysis_v2.md` (v1 kept).
+- **Verified** (headless, SW-cleared): v0.1.3, 18 markers, 7 photo popups, lightbox opens the photo,
+  mined polygon + 5 GT rows, site-info main-patch + false-clay, 0 console errors.
+
+---
+
 ## v0.1.3 — opal-formation model in Site info (2026-07-04)
 
 Steven's field insight — the crux of any future favourability model. The basal clay isn't just a

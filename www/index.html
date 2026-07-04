@@ -128,6 +128,13 @@
   .pop-kv { color: #9aa3b0; }
   .pop-note { margin-top: 5px; color: #c7cdd6; font-style: italic; }
   .pop-adv { margin-top: 7px; padding-top: 7px; border-top: 1px solid #262a34; font-size: 11.5px; color: #f0b06a; }
+  .pop-photos { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+  .pop-thumb { width: 66px; height: 66px; object-fit: cover; border-radius: 6px; cursor: pointer;
+    border: 1px solid #3a3f4b; }
+  .pop-thumb:active { transform: scale(.96); }
+  #lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,.92); display: none;
+    align-items: center; justify-content: center; padding: 16px; }
+  #lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,.6); }
 
   .leaflet-container { background: #0b1020; }
   .leaflet-bar a { background: #171a22; color: #e8eaf0; border-bottom-color: #262a34; }
@@ -203,51 +210,61 @@ var MAG_BOUNDS = L.latLngBounds([[-24.20, 142.24], [-23.29, 143.23]]);
 // Contour data extent (bundled offline; QLD 10 m SRTM contours clipped to the lease).
 var CONTOUR_BOUNDS = L.latLngBounds([[-23.760, 142.720], [-23.740, 142.750]]);
 
-// ---- Ground-truth data (Steven's Google Earth KML, Aug 2025 field trip) -----
-// Verbatim from ~/Documents/wikis/prospecting/opalton_aug2025_analysis.md.
-// Source coords are (lon, lat); Leaflet wants [lat, lon] — converted inline.
-var CLAIM = [ // "Canadian mining claim" polygon, ~15 ha, long axis NNE–SSW
-  [-23.7444, 142.7344], [-23.7448, 142.7365], [-23.7495, 142.7358],
-  [-23.7519, 142.7334], [-23.7473, 142.7327], [-23.7466, 142.7340]
-];
-
-// type ∈ gem | red | potch | patch  → colour-coded per Steven's descriptions.
+// ---- Ground-truth data (Steven's Google Earth KML v2, Aug 2025 field trip) -----
+// Re-ingested from opal_mine_opalton_aug2025_v2.kml → analysis in
+// ~/Documents/wikis/prospecting/opalton_aug2025_analysis_v2.md. 18 opal-find pins
+// (7 carry field photos), the claim + already-mined-area polygons, trenches, fault.
+// Coords are [lat, lon]; `alt` = KML altitude (m) — the main-patch cluster sits ~258 m,
+// ~2 m shallower than the ~256 m western finds. type ∈ gem | red | potch | patch.
 var FINDS = [
-  { n:1,  type:'potch', name:'Potchy opal (little colour)', ll:[-23.7471,142.7361], depth:'surface + fault',
-    note:'Lots of opal in ironstone layer WEST of fault, some IN fault, ~3 m² area.' },
-  { n:2,  type:'gem',   name:'Gem opal (in mullock)',       ll:[-23.7477,142.7333], depth:'surface',
-    note:'Mullock / spoil find.' },
-  { n:3,  type:'gem',   name:'Gem opal (in mullock)',       ll:[-23.7476,142.7338], depth:'surface',
-    note:'Mullock / spoil find.' },
-  { n:4,  type:'gem',   name:'Gem opal (in situ)',          ll:[-23.7472,142.7335], depth:'4 m',
-    note:'On false white clay.' },
-  { n:5,  type:'potch', name:'Potch opal',                  ll:[-23.7474,142.7332], depth:'4 m',
-    note:'4 m below surface.' },
-  { n:6,  type:'potch', name:'Potch opal (boulder)',        ll:[-23.7477,142.7336], depth:'8 m',
-    note:'Isolated boulder in situ — deepest horizon.' },
-  { n:7,  type:'patch', name:'Opal in mullock',             ll:[-23.7466,142.7355], depth:'surface',
-    note:'Small piece on ground.' },
-  { n:8,  type:'patch', name:'Small piece of opal',         ll:[-23.7501,142.7338], depth:'30 cm',
-    note:'Topsoil, in situ.' },
-  { n:9,  type:'red',   name:'Red opal',                    ll:[-23.7471,142.7335], depth:'—',
-    note:'No depth annotation in KML.' },
-  { n:'★',type:'gem',   name:'Gem opal (surface)',          ll:[-23.7476,142.7334], depth:'surface',
-    note:'On surface level in mullock, edge of trench.' }
+  { n:1, type:'potch', name:'Potchy opal with some color', ll:[-23.747095,142.736133], depth:'—', alt:264.6, note:'Lots of opal in ironstone layer west of fault and some in fault about 3m2 Ironstone from fault very hard and super full', photos:[] },
+  { n:2, type:'gem', name:'gem opal', ll:[-23.747717,142.733287], depth:'surface', alt:256.3, note:'in muloc', photos:[] },
+  { n:3, type:'gem', name:'gem opal', ll:[-23.747602,142.733795], depth:'surface', alt:256.8, note:'in muloc', photos:[] },
+  { n:4, type:'gem', name:'gem opal', ll:[-23.747215,142.733452], depth:'4 m', alt:256.7, note:'instiue 4m below surface on false white clay', photos:[] },
+  { n:5, type:'potch', name:'Potch opal', ll:[-23.747439,142.733214], depth:'4 m', alt:256.3, note:'4m below surface', photos:[] },
+  { n:6, type:'potch', name:'Potch opal', ll:[-23.747725,142.7336], depth:'8 m', alt:256.6, note:'Insitue 8m below surface isolated boulder', photos:[] },
+  { n:7, type:'patch', name:'opal in muloc', ll:[-23.746609,142.735532], depth:'surface', alt:260.1, note:'Small piece on ground', photos:[] },
+  { n:8, type:'patch', name:'small piece of opal', ll:[-23.7501,142.733787], depth:'0.3 m', alt:258.9, note:'In topsoil insitue 300mm below surface', photos:[] },
+  { n:9, type:'red', name:'red opal', ll:[-23.747095,142.733537], depth:'—', alt:256.7, note:'', photos:[] },
+  { n:10, type:'gem', name:'gem opal', ll:[-23.747595,142.733395], depth:'surface', alt:256.1, note:'On surface level in muloc on edge of trench', photos:[] },
+  { n:11, type:'red', name:'pigeon red rainbow opal', ll:[-23.746955,142.73454], depth:'surface', alt:259.4, note:'Only found parts of opal boulders, were extremely high quality rest lost dug from on top was messy', photos:['pigeon_red_rainbow_opal_0.jpg','pigeon_red_rainbow_opal_1.jpg'] },
+  { n:12, type:'gem', name:'epic gem green boulder', ll:[-23.74694,142.734656], depth:'—', alt:258.4, note:'Insitue rock outcrop dipped and made', photos:['epic_gem_green_boulder_0.jpg'] },
+  { n:13, type:'potch', name:'1m blue potch and little green flashes', ll:[-23.747086,142.734578], depth:'—', alt:258.2, note:'', photos:[] },
+  { n:14, type:'gem', name:'rainbow opal patch', ll:[-23.747099,142.734663], depth:'—', alt:258.4, note:'', photos:['rainbow_opal_patch_0.jpg','rainbow_opal_patch_1.jpg','rainbow_opal_patch_2.jpg'] },
+  { n:15, type:'gem', name:'rambow rock', ll:[-23.747148,142.73466], depth:'—', alt:258.2, note:'', photos:['rambow_rock_0.jpg','rambow_rock_1.jpg'] },
+  { n:16, type:'patch', name:'opal level ironstone heading south', ll:[-23.747165,142.734608], depth:'—', alt:258.1, note:'', photos:['opal_level_ironstone_heading_sou_0.jpg'] },
+  { n:17, type:'red', name:'red opal', ll:[-23.746902,142.734643], depth:'—', note:'', photos:['red_opal_0.jpg','red_opal_1.jpg'] },
+  { n:18, type:'gem', name:'blue green gem opal', ll:[-23.746858,142.734672], depth:'—', note:'', photos:['blue_green_gem_opal_0.jpg'] },
 ];
 
-var FAULTS = { // 3 markers clustered at the eastern edge of the claim
-  points: [ [-23.7468,142.7363], [-23.7473,142.7360] ],
-  lines:  [ [ [-23.7472,142.7360], [-23.7468,142.7363] ] ] // NE-trending
+var CLAIM = [ // "Canadian mining claim" polygon (KML), ~15 ha, long axis NNE–SSW
+  [-23.746567,142.734035], [-23.746235,142.73301], [-23.747273,142.732689],
+  [-23.750223,142.733855], [-23.751035,142.732842], [-23.751928,142.73338],
+  [-23.749532,142.735786], [-23.744758,142.736543], [-23.744435,142.734375]
+];
+
+// Already-worked ground: "area mined to 1m above 1st clay layer" (KML polygon), in the main patch.
+var MINED = [
+  [-23.746909,142.734695], [-23.746857,142.734607], [-23.747056,142.734519],
+  [-23.747098,142.734655], [-23.747097,142.734656]
+];
+
+var FAULTS = { // markers + NE-trending line at the eastern edge of the claim
+  points: [ [-23.74682102286016,142.7363343163365], [-23.74726172205505,142.7359640831271] ],
+  lines:  [ [ [-23.747245,142.735962], [-23.746809,142.736334] ] ]
 };
 
-var TRENCHES = [ // 6 excavation line-strings, oriented ~NE–SW (parallel to the fault)
-  [ [-23.7466,142.7362], [-23.7452,142.7344] ],
-  [ [-23.7471,142.7361], [-23.7457,142.7342] ],
-  [ [-23.7483,142.7360], [-23.7464,142.7330] ],
-  [ [-23.7491,142.7358], [-23.7475,142.7333] ],
-  [ [-23.7516,142.7336], [-23.7508,142.7331] ],
-  [ [-23.7462,142.7348], [-23.7468,142.7347] ]  // near fault
+var TRENCHES = [ // excavation line-strings (KML): trench / potential trench / path, ~NE–SW
+  { name:'potential trench', seg:[[-23.746553,142.736245],[-23.745151,142.734353]] },
+  { name:'potential trench', seg:[[-23.747069,142.736144],[-23.745689,142.734168]] },
+  { name:'potential trench', seg:[[-23.748284,142.735963],[-23.746368,142.732964]] },
+  { name:'trench', seg:[[-23.749053,142.735839],[-23.747546,142.733337]] },
+  { name:'trench', seg:[[-23.751638,142.733651],[-23.750811,142.733134]] },
+  { name:'Untitled path', seg:[[-23.751187,142.734104],[-23.750576,142.733465]] },
+  { name:'Untitled path', seg:[[-23.749639,142.735668],[-23.748669,142.734038]] },
+  { name:'trench', seg:[[-23.746174,142.734832],[-23.746796,142.734674]] },
 ];
+var PHOTO_BASE = 'data/photos/opalton/';
 
 var FIND_COLORS = { gem:'#22c55e', red:'#ef4444', potch:'#92531f', patch:'#f59e0b' };
 var FIND_LABELS = { gem:'Gem opal', red:'Red opal', potch:'Potch', patch:'Patch / indeterminate' };
@@ -259,24 +276,33 @@ var STRATA = [ // top → bottom (typical uncapped profile); opal-forming horizo
   { c:'#c9b28a', t:'Sandstone (near-surface)', d:'pure sandstone in most dig areas — radar-friendly' },
   { c:'#7a4a28', t:'Ironstone layers ×3–4', d:'THE TARGET — opal forms in certain zones; bottom layer usually best', opal:true },
   { c:'#c9b28a', t:'Sandstone', d:'~1 m' },
-  { c:'#5b8bb0', t:'Basal clay (the dam)', d:'at the very BOTTOM, UNDER the target — dams silica-rich water; GPR images the ironstone above it, then stops here', opal:true,
-    key:'★ KEY predictor: clay-basement LOW POINTS pool silica-rich water — the ironstone right above them carries the thickest, best opal.' }
+  { c:'#5b8bb0', t:'Basal clay (the main dam)', d:'at the very BOTTOM, UNDER the target — dams silica-rich water; GPR images the ironstone above it, then stops here', opal:true,
+    key:'★ KEY predictor: clay LOW POINTS pool silica-rich water → thickest ironstone above them. Basal clay = the biggest dams (best on average), but false/intermediate clay pockets are productive too.' }
 ];
 // Uncommon variant Steven has seen but which is NOT the norm.
 var CAP_NOTE = 'Note: the clay is <b>basal</b> (bottom), not a cap. A <i>capping</i> clay ABOVE the ' +
   'sandstone is an uncommon variant Steven has seen — where it occurs it defeats GPR and you switch to ERT.';
 // How opal forms here — the mudstone→ironstone process (operator field notes, Aug 2025 trip).
-var FORMATION = 'The basal clay is the <b>key predictor of thick opal</b>, not just a bottom layer. ' +
-  'Where the clay basement dips into low points it dams silica-rich groundwater into pools. That ' +
-  'silica-rich water reacts with organic matter in the mudstone and converts it to <b>ironstone</b> ' +
-  '(silica-binding chemistry) — and the ironstone sitting <b>immediately above the clay basement</b> ' +
-  'carries the thickest, best-quality opal. Opal can form higher in the ironstone too, but thinner. ' +
-  'Proximity to the clay-basement pools sets <i>thickness</i>; colour is a separate axis.';
-var MODEL_TARGET = '🎯 <b>Future favourability model, take note:</b> the target is the clay-basement ' +
-  '<b>TOPOGRAPHY</b> — the low points where water pools — more than the raw depth-to-clay. Opal ' +
-  'thickness tracks proximity to those basement pools.';
+var FORMATION = 'Clay is the <b>primary predictor of thick opal</b>. Where a clay surface dips into low ' +
+  'points it dams silica-rich groundwater into pools; that water reacts with organic matter in the ' +
+  'mudstone and converts it to <b>ironstone</b> (silica-binding chemistry). The ironstone sitting ' +
+  '<b>immediately above the clay</b> carries the thickest, best opal. The <b>basal clay</b> makes the ' +
+  'biggest dams and the best opal on average — but it is <b>not the only productive clay.</b>';
+// False/intermediate clay layers — corrected: they can ALSO be productive.
+var FALSE_CLAY = '<b>False (intermediate) clay pockets</b> inside the sandstone/ironstone can trap silica ' +
+  'water and form opal too, acting as <b>smaller-scale local dams</b> — Steven has pulled nice stuff from ' +
+  'them (find #4’s gem sat on a false white-clay layer). They’re real targets, not just structure.';
+var MODEL_TARGET = '🎯 <b>Future favourability model, take note:</b> the target is clay-surface ' +
+  '<b>TOPOGRAPHY</b> — the low points where water pools (basal <i>and</i> false-layer) — more than raw ' +
+  'depth-to-clay. <b>ERT wins</b> for this because it maps <i>all</i> clay contrasts, not just the basal one; ' +
+  'GPR still gives the high-res image of the uncapped sandstone→ironstone section.';
+// The dense "main patch" (fresh KML) — the highest-density cluster, mid-claim.
+var MAIN_PATCH = '📍 <b>The "main patch"</b> — the densest cluster (8 fresh finds incl. epic gem green ' +
+  'boulder, pigeon red rainbow, rainbow opal patch) sits mid-claim at ~142.7346°E, −23.7470°S — about ' +
+  '<b>50 m EAST</b> of the earlier western cluster and at <b>~258 m</b> altitude, ~<b>2 m shallower</b> ' +
+  'than the ~256 m western finds. The grey polygon shows what’s already been mined here.';
 var PATTERNS = [
-  'Best gem/red opal clusters in a ~40×40 m box WEST of the fault, at ~4 m depth.',
+  'The dense main-patch cluster (mid-claim, ~258 m) is ~2 m shallower than the ~256 m western finds.',
   'Fault-adjacent finds run potchy — fractures carry silica water but tend to make patch, not colour.',
   'Depth stratification is real: 0.3 m surface → 4 m in situ → 8 m isolated boulders (three horizons).',
   'Trenches run NE–SW, parallel to the fault trend — miners followed the structure.'
@@ -295,12 +321,13 @@ map.zoomControl.setPosition('topright');
 map.getPane('p-finds').style.zIndex = 650; // above markerPane default
 
 // ---- Base maps ------------------------------------------------------------
-// Highest free aerial available over remote Opalton is Esri World Imagery (~z18 native).
-// We over-zoom to 19 for on-claim inspection. Higher-res paid aerial (Nearmap) does NOT
-// cover remote CW QLD on a free tier — flagged in Site info, not wired.
+// Highest free aerial over remote Opalton is Esri World Imagery, and its native ceiling HERE is
+// z17 (z18+ returns Esri's "no data" placeholder). So cap native at 17 and over-zoom to 19 for
+// on-claim inspection — real (upsampled) imagery beats blank tiles. Paid aerial (Nearmap) does
+// NOT cover remote CW QLD on a free tier — flagged in Site info, not wired.
 var baseSat = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { attribution: 'Imagery © Esri', maxZoom: 19, maxNativeZoom: 18, noWrap: true, pane: 'p-sat' });
+  { attribution: 'Imagery © Esri', maxZoom: 19, maxNativeZoom: 17, noWrap: true, pane: 'p-sat' });
 var baseTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
   { attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17, noWrap: true, pane: 'p-topo' });
 // ⬜ Minimal — solid near-white fill, rendered client-side (no tiles, instant offline).
@@ -432,8 +459,17 @@ var claimLayer = L.polygon(CLAIM, { pane: 'p-claim', color: '#2dd4bf', weight: 3
   fillColor: '#14b8a6', fillOpacity: 0.04, dashArray: '9 5', lineJoin: 'round' })
   .bindPopup('<div class="pop-title">📐 Steven\'s claim</div>' +
     '<div class="pop-kv">~15 ha · long axis NNE–SSW</div>' +
-    '<div class="pop-note">Aug 2025 field trip. Best gem/red opal clusters in the western part; ' +
+    '<div class="pop-note">Aug 2025 field trip. The dense "main patch" cluster sits mid-claim; ' +
     'fault-adjacent finds run potchy.</div>');
+
+// Already-worked ground — muted grey fill + dashed border so it reads as "disturbed", distinct
+// from the teal claim outline.
+var minedLayer = L.polygon(MINED, { pane: 'p-tenement', color: '#cbd5e1', weight: 1.5,
+  fillColor: '#94a3b8', fillOpacity: 0.32, dashArray: '4 3' })
+  .bindPopup('<div class="pop-title">⛏ Already mined</div>' +
+    '<div class="pop-kv">"area mined to 1 m above 1st clay layer"</div>' +
+    '<div class="pop-note">Worked ground in the main patch — dug down to ~1 m above the first clay ' +
+    'layer. Shown so you can see what\'s already been turned over.</div>');
 
 var structLayer = L.layerGroup([], { pane: 'p-struct' });
 FAULTS.lines.forEach(function(ln){
@@ -448,10 +484,14 @@ FAULTS.points.forEach(function(pt){
 });
 
 var trenchLayer = L.layerGroup([], { pane: 'p-struct' });
-TRENCHES.forEach(function(tr, i){
-  L.polyline(tr, { pane:'p-struct', color:'#fb923c', weight:4, opacity:.85 })
-    .bindPopup('<div class="pop-title">🚜 Trench ' + (i+1) + '</div>' +
-      '<div class="pop-note">Excavation, NE–SW — miners followed the fault structure.</div>').addTo(trenchLayer);
+TRENCHES.forEach(function(tr){
+  var potential = /potential/i.test(tr.name);
+  var label = potential ? '🚜 Potential trench' : (/path/i.test(tr.name) ? '🛤 Path' : '🚜 Trench');
+  L.polyline(tr.seg, { pane:'p-struct', color: potential ? '#fdba74' : '#fb923c',
+      weight: potential ? 3 : 4, opacity: potential ? 0.7 : 0.85, dashArray: potential ? '7 5' : null })
+    .bindPopup('<div class="pop-title">' + label + '</div>' +
+      '<div class="pop-note">' + (potential ? 'Marked as a potential dig line.' :
+        'Excavation, ~NE–SW — miners followed the fault structure.') + '</div>').addTo(trenchLayer);
 });
 
 // Opal finds — faceted "gem" divIcons, colour-coded by type, with depth badge.
@@ -462,15 +502,37 @@ function findIcon(f) {
     html: '<div class="gem-marker" style="width:16px;height:16px;background:' + c + '"></div>'
   });
 }
+function findPopup(f) {
+  var h = '<div class="pop-title"><span class="pop-chip" style="background:' + FIND_COLORS[f.type] + '">' +
+    f.n + '</span>' + f.name + '</div>' +
+    '<div class="pop-kv">' + FIND_LABELS[f.type] + ' · depth: <b>' + f.depth + '</b>' +
+    (f.alt ? ' · <b>' + f.alt + ' m</b> RL' : '') + '</div>';
+  if (f.note) h += '<div class="pop-note">' + f.note + '</div>';
+  if (f.photos && f.photos.length) {
+    h += '<div class="pop-photos">';
+    f.photos.forEach(function(p){
+      var src = PHOTO_BASE + p;
+      h += '<img class="pop-thumb" src="' + src + '" alt="field photo" onclick="showPhoto(\'' + src + '\')">';
+    });
+    h += '</div>';
+  }
+  return h;
+}
 var findsLayer = L.layerGroup([], { pane: 'p-finds' });
 FINDS.forEach(function(f){
   L.marker(f.ll, { pane:'p-finds', icon: findIcon(f) })
-    .bindPopup('<div class="pop-title"><span class="pop-chip" style="background:' + FIND_COLORS[f.type] + '">' +
-      f.n + '</span>' + f.name + '</div>' +
-      '<div class="pop-kv">' + FIND_LABELS[f.type] + ' · depth: <b>' + f.depth + '</b></div>' +
-      '<div class="pop-note">' + f.note + '</div>')
+    .bindPopup(findPopup(f), { maxWidth: 260 })
     .addTo(findsLayer);
 });
+
+// Full-screen photo lightbox (tap a thumbnail to enlarge; tap anywhere to close).
+function showPhoto(src) {
+  var lb = document.getElementById('lightbox');
+  if (!lb) { lb = document.createElement('div'); lb.id = 'lightbox'; lb.onclick = function(){ lb.style.display = 'none'; };
+    document.body.appendChild(lb); }
+  lb.innerHTML = '<img src="' + src + '" alt="field photo">';
+  lb.style.display = 'flex';
+}
 
 // ---- Overlay + ground-truth registries (drive the drawer toggles) ----------
 var OVERLAYS = [
@@ -493,10 +555,11 @@ var OVERLAYS = [
     on:false, get:function(){ return layer1VD; }, lazy:null }
 ];
 var GROUNDTRUTH = [
-  { k:'claim',   name:'Claim polygon',     sub:'~15 ha, Aug 2025',           sw:'#14b8a6', on:true, layer: claimLayer },
-  { k:'finds',   name:'Opal finds (10)',   sub:'9 numbered + 1 surface gem', sw:'#22c55e', on:true, layer: findsLayer },
-  { k:'faults',  name:'Faults',            sub:'3 markers, NE-trending',     sw:'#ef4444', on:true, layer: structLayer },
-  { k:'trench',  name:'Trenches (6)',      sub:'Excavations, NE–SW',         sw:'#fb923c', on:true, layer: trenchLayer }
+  { k:'claim',   name:'Claim polygon',     sub:'~15 ha, Aug 2025',            sw:'#14b8a6', on:true, layer: claimLayer },
+  { k:'finds',   name:'Opal finds (18)',   sub:'7 with field photos 📷',      sw:'#22c55e', on:true, layer: findsLayer },
+  { k:'mined',   name:'Mined area',        sub:'Already worked (main patch)', sw:'#94a3b8', on:true, layer: minedLayer },
+  { k:'faults',  name:'Faults',            sub:'2 markers + line, NE-trend',  sw:'#ef4444', on:true, layer: structLayer },
+  { k:'trench',  name:'Trenches (8)',      sub:'Trench / potential / path',   sw:'#fb923c', on:true, layer: trenchLayer }
 ];
 
 // ---- Drawer UI ------------------------------------------------------------
@@ -558,6 +621,7 @@ GROUNDTRUTH.forEach(function(g){
 (function(){
   var h = '<p style="margin:2px 0 8px;color:#b9c0cb">Steven\'s claim is the anchor — ~15 ha, worked Aug 2025. ' +
     'Everything else zooms out from here.</p>';
+  h += '<div class="model-target" style="color:#a7f3d0;border-left-color:#14b8a6;background:rgba(20,184,166,.08)">' + MAIN_PATCH + '</div>';
   h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:6px 0 3px">Stratigraphy (top → bottom)</div>';
   h += '<div class="strata">';
   STRATA.forEach(function(s){
@@ -570,11 +634,13 @@ GROUNDTRUTH.forEach(function(g){
   h += '<div style="font-size:11.5px;line-height:1.5;color:#9aa3b0;margin:2px 0 2px">' + CAP_NOTE + '</div>';
   h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:10px 0 3px">How opal forms here</div>';
   h += '<div class="formation">' + FORMATION + ' <span class="src">— from the operator\'s field notes, Aug 2025 trip.</span></div>';
+  h += '<div class="formation">' + FALSE_CLAY + '</div>';
   h += '<div class="model-target">' + MODEL_TARGET + '</div>';
   h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:8px 0 3px">Ground-truth patterns</div>';
   PATTERNS.forEach(function(p){ h += '<div class="site-note">' + p + '</div>'; });
-  h += '<div class="site-flag">🛰 <b>Imagery:</b> Esri World Imagery (~z18 native, over-zoomed to 19). ' +
-    'Higher-res paid aerial (Nearmap) doesn\'t cover remote CW QLD on a free tier.<br>' +
+  h += '<div class="site-flag">🛰 <b>Imagery:</b> Esri World Imagery — native resolution tops out at ' +
+    '~z17 over remote Opalton (z18+ has no Esri tiles), over-zoomed to 19. Paid aerial (Nearmap) ' +
+    'doesn\'t cover remote CW QLD on a free tier.<br>' +
     '⛰ <b>Terrain:</b> only 10 m contours (from GA 1-second ~30 m SRTM) exist over the claim — ' +
     'there is NO LiDAR 1 m/5 m out here. 1 m contours aren\'t available; 10 m is the ceiling.<br>' +
     '📷 <b>Field photos:</b> the Aug 2025 KML\'s photos didn\'t survive the upload purge. Re-export from ' +
@@ -593,7 +659,8 @@ document.getElementById('legend').innerHTML =
   '<div class="legend-item"><span class="g gem-marker" style="background:#f59e0b"></span> Patch / indeterminate</div>' +
   '<div class="legend-item"><span class="g" style="border:2px dashed #2dd4bf;background:rgba(20,184,166,.1)"></span> Claim polygon (the lease)</div>' +
   '<div class="legend-item"><span class="g" style="background:#ef4444;height:4px"></span> Fault</div>' +
-  '<div class="legend-item"><span class="g" style="background:#fb923c;height:4px"></span> Trench (excavation)</div>' +
+  '<div class="legend-item"><span class="g" style="background:#fb923c;height:4px"></span> Trench (dashed = potential)</div>' +
+  '<div class="legend-item"><span class="g" style="background:rgba(148,163,184,.35);border:1px dashed #cbd5e1"></span> Already-mined area</div>' +
   '<div class="legend-item"><span class="g" style="background:#e8a15a;height:3px"></span> Contour (10 m)</div>' +
   '<div class="legend-item"><span class="g" style="background:rgba(124,92,255,.25);border:1px solid #7c5cff"></span> Winton Fm (opal host)</div>' +
   '<div class="legend-item"><span class="g" style="background:rgba(220,38,38,.2);border:1.5px solid #dc2626"></span> Mining lease / claim</div>' +
@@ -606,7 +673,7 @@ document.getElementById('srcList').innerHTML =
   '<b>Hillshade</b> — Esri World Hillshade (global relief)<br>' +
   '<b>Geophysics</b> — Magnetics (TMI-RTP, 1VD) + Radiometrics (ternary), Geoscience Australia national grids v7/v4 2019 (CC-BY 4.0)<br>' +
   '<b>Tenements</b> — QLD <i>Mineral Tenement</i>, Dept of Resources / GeoResGlobe (CC-BY 4.0)<br>' +
-  '<b>Ground truth</b> — Steven\'s Opalton field trip, Aug 2025 (Google Earth KML)';
+  '<b>Ground truth</b> — Steven\'s Opalton field trip, Aug 2025 (Google Earth KML v2: 18 finds, 12 field photos, mined-area + claim polygons)';
 
 // ---- Locate ---------------------------------------------------------------
 var meMarker = null;

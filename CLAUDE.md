@@ -23,7 +23,7 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
 
 | Version | What | Where |
 |---|---|---|
-| **v0.1.3** | 🧪 Opal-formation model in Site info. The basal clay is **the key predictor of thick opal**: clay-basement low points pool silica-rich water → mudstone converts to ironstone → thickest opal sits immediately above the basement. New "How opal forms here" paragraph (cited to operator field notes) + a ★ KEY annotation on the basal-clay stratigraphy row + a flagged **future-model target: clay-basement TOPOGRAPHY (low points), not depth-to-clay.** Site-info panel only (+ version bump so the SW pushes it). | `www/index.html` site-info · CLAUDE.md domain notes |
+| **v0.1.3** | 🧪 Two batches under one chip (SW cache-rev `v0.1.3-gt`). **(a) Opal-formation model** in Site info: clay low-points pool silica-rich water → mudstone→ironstone → thickest opal immediately above the clay; ★ KEY stratigraphy annotation + "How opal forms here" (cited to operator notes) + future-model target = clay-surface TOPOGRAPHY, not depth-to-clay. **(b) KML v2 ground-truth rebuild**: re-ingested the full re-exported KML → **18 opal-find pins** (was 10), **12 field photos** in pin popups + a full-screen lightbox (bundled offline), the **"area mined to 1m above 1st clay layer" polygon** (muted/dashed), 8 trenches (trench/potential/path), claim+fault from KML. New **"main patch"** note (dense cluster ~50 m E of the western finds, ~258 m = ~2 m shallower). **Geology correction: false/intermediate clay layers are productive too** (smaller local dams) → ERT wins (maps ALL clay contrasts). Esri imagery native ceiling capped at z17 (z18+ blank over Opalton). | `www/index.html` · `data/photos/opalton/` · `research/` · `analysis_v2.md` |
 | **v0.1.2** | 🩹 GPR-verdict correction (stratigraphy fix from Steven). The clay is **basal** (UNDER the ironstone target), not a cap — so GPR images the target through the sandstone and only dies beneath it. **GPR is now the top pick for typical uncapped-sandstone dig areas; ERT for capped/unknown-cap sites.** Updated the research doc's GPR section + fit table, the site-info geophysics one-liner + stratigraphy diagram (clay labelled basal; capping-clay flagged as an uncommon variant). | `research/` §Active techniques · `www/index.html` site-info |
 | **v0.1.1** | 🎯 **Lease-first.** Default view zooms to Steven's claim (z16). Added: **10 m contours** (QLD SRTM, bundled offline, clipped to the lease — NO LiDAR 1m/5m exists over remote Opalton), **Hillshade** (Esri), and two honest geophysics-enhancement overlays — **Radiometrics ternary** (`radmap_v4_2019_filtered_ternary_image`, the "moderate weathering signal, often > mag here") and **Magnetics 1VD** (`magmap_v7_2019_1VD`, shallow/structural filter). Brighter claim boundary. New **📋 Site info** panel: stratigraphy column + ground-truth patterns + honest imagery/terrain/photo/geophysics notes. Satellite over-zoom to z19. Field photos: the Aug 2025 KML's photos didn't survive the upload purge (re-export needed). | `www/index.html` · `research/` (Active exploration techniques) |
 | **v0.1** | 🪨 First build. 3 basemaps (Satellite default / Topographic / ⬜ Minimal). Steven's Aug 2025 ground truth: claim polygon (~15 ha), 10 opal finds colour-coded by type (gem=green, red=red, potch=brown, patch=amber), 3 fault markers, 6 trench excavations. Winton Formation footprint (QLD geology). GA magnetics (TMI-RTP) heatmap clipped to a ~50 km buffer. QLD mining-tenement overlay (ML/MC/EPM, opal-mineral highlighted) as the legality+activity layer. Data-viz only — **no favourability scoring yet.** | `www/` · `research/opal_favourability_data_sources.md` |
@@ -34,9 +34,13 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
   (deferred — see `research/` "Deferred"). Data-first → correlations → specialists.
 - **Every layer cites a real, verified source** (see the `#srcList` block in `www/index.html`
   and `research/opal_favourability_data_sources.md`). Do NOT invent geology datasets.
-- **Ground truth is verbatim** from `~/Documents/wikis/prospecting/opalton_aug2025_analysis.md`
-  (Steven's Google Earth KML). NEVER write to anything under `~/Documents/wikis/` — it is
-  Steven's source data. App exports (when added) go to `exports/`.
+- **Ground truth is verbatim** from `~/Documents/wikis/prospecting/opalton_aug2025_analysis_v2.md`
+  (re-ingested from `opal_mine_opalton_aug2025_v2.kml`; v1 `..._analysis.md` kept for history, do
+  not delete). Only write NEW files under `~/Documents/wikis/prospecting/` (v2 analysis, KML copy);
+  never overwrite Steven's originals. App exports go to `exports/`. Re-ingest recipe: parse the KML
+  → extract Carousel `<gx:imageUrl>` photos (resize ≤1024px) → rebuild the inline FINDS/CLAIM/
+  MINED/TRENCHES in `www/index.html`. The 12 MB KML lives in `data/` but `build_site.sh` strips
+  `*.kml` from the published `_site` (not needed at runtime).
 - **Cultural heritage is advisory-only.** QLD Aboriginal & Torres Strait Islander cultural
   heritage (ACHRIS/DATSIP) is legally restricted — the app carries a Duty-of-Care text advisory
   and NEVER ingests or maps heritage site data.
@@ -55,7 +59,7 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
 | Magnetics (TMI-RTP / 1VD) | Geoscience Australia national geophysical grids v7 2019 | `services.ga.gov.au/gis/geophysical-grids/wms` layers `geophys:magmap_v7_2019_RTP` + `_1VD` (WMS, runtime-cached) | CC-BY 4.0 |
 | Radiometrics (ternary) | GA national radiometric grids v4 2019 (K-Th-U) | same WMS, `geophys:radmap_v4_2019_filtered_ternary_image` | CC-BY 4.0 |
 | Mining tenements | QLD Mineral Tenement (ML/MC/EPM; opal = `tenmineral='OP'`) | QLD Spatial `Economy/MineralTenement` FeatureServer → bundled `data/tenements_opalton.geojson` | CC-BY 4.0 |
-| Ground truth | Steven's Opalton field trip, Aug 2025 | Google Earth KML → `~/Documents/wikis/prospecting/opalton_aug2025_analysis.md` | Steven's |
+| Ground truth | Steven's Opalton field trip, Aug 2025 (**v2**: 18 finds, 12 photos, mined+claim polygons) | `opal_mine_opalton_aug2025_v2.kml` → `opalton_aug2025_analysis_v2.md`; extracted to `data/photos/opalton/` + inline FINDS | Steven's |
 
 **Refetch bundled data:** re-run the ArcGIS FeatureServer `/query?f=geojson` calls in
 `tools/README.md` (Winton Fm + tenements) with the Opalton bbox; they are small (≈133 KB + 25 KB).
@@ -68,14 +72,17 @@ finds run potchy** (fractures carry water but make patch, not colour). Depth str
 (0.3 m surface → 4 m in situ → 8 m isolated boulders).
 
 **THE opal-formation model (operator field notes, Aug 2025 — the crux of any favourability model):**
-the basal clay is the **key predictor of THICK opal, not just a base layer.** Where the clay
-basement dips into **low points** it dams silica-rich groundwater into pools; that water reacts with
-organic matter in the mudstone and **converts mudstone → ironstone** (silica-binding chemistry). The
-ironstone sitting **immediately above the clay basement** carries the **thickest, best** opal; opal
-higher in the ironstone is thinner. **Thickness tracks proximity to the clay-basement pools; colour
-is a separate axis.** ⇒ **The future-model target is clay-basement TOPOGRAPHY (the low points where
-water pools), not raw depth-to-clay.** This is what a favourability model must estimate — and it's
-exactly why on-claim GPR/ERT (which image the basement surface) beat the basin geophysics.
+clay is the **primary predictor of THICK opal.** Where a clay surface dips into **low points** it
+dams silica-rich groundwater into pools; that water reacts with organic matter in the mudstone and
+**converts mudstone → ironstone** (silica-binding chemistry). The ironstone **immediately above the
+clay** carries the **thickest, best** opal. **Thickness tracks proximity to the clay pools; colour is
+a separate axis.** The **basal clay** makes the biggest dams / best opal on average — **but false /
+intermediate clay layers are productive too** (smaller-scale local dams; find #4's gem sat on a false
+white-clay layer). NOT "just structural." ⇒ **The future-model target is clay-surface TOPOGRAPHY (the
+low points where water pools — basal AND false-layer), not raw depth-to-clay.** This is why **ERT**
+(maps ALL clay contrasts) + on-claim **GPR** (images the uncapped sandstone→ironstone) beat the basin
+geophysics. Main-patch ground truth (v2 KML): the densest cluster sits mid-claim ~142.7346°E,
+−23.7470°S, ~258 m — ~2 m shallower than the ~256 m western finds.
 
 Favourability drivers to model later: Winton Fm extent (necessary), **clay-basement low-points /
 palaeo-lows (the primary thickness driver — needs high-res sub-surface: GPR/ERT, not SRTM)**,

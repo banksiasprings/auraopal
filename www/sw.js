@@ -10,7 +10,10 @@
  * Bump SHELL_REV on every deploy so returning clients re-fetch the app shell.
  * Keep it in lockstep with APP_VERSION in index.html (the on-screen version badge).
  */
-const SHELL_REV = 'v0.1.3';
+// Chip stays 'v0.1.3' (APP_VERSION), but the cache key gets a '-gt' suffix so this
+// ground-truth rebuild (KML v2: 18 finds + 12 field photos + mined polygon) actually
+// purges the previous v0.1.3 shell and re-fetches on installed clients.
+const SHELL_REV = 'v0.1.3-gt';
 const SHELL_CACHE = 'auraopal-shell-' + SHELL_REV;
 const TILE_CACHE = 'auraopal-tiles-v1';
 
@@ -23,6 +26,20 @@ const SHELL_ASSETS = [
   './data/winton_formation.geojson',
   './data/tenements_opalton.geojson',
   './data/contours_10m_opalton.geojson',
+  // v0.1.3 ground-truth field photos (12, ~2.2 MB total after resize) — precached so pin
+  // popups show Steven's opal photos offline in the field.
+  './data/photos/opalton/blue_green_gem_opal_0.jpg',
+  './data/photos/opalton/epic_gem_green_boulder_0.jpg',
+  './data/photos/opalton/opal_level_ironstone_heading_sou_0.jpg',
+  './data/photos/opalton/pigeon_red_rainbow_opal_0.jpg',
+  './data/photos/opalton/pigeon_red_rainbow_opal_1.jpg',
+  './data/photos/opalton/rainbow_opal_patch_0.jpg',
+  './data/photos/opalton/rainbow_opal_patch_1.jpg',
+  './data/photos/opalton/rainbow_opal_patch_2.jpg',
+  './data/photos/opalton/rambow_rock_0.jpg',
+  './data/photos/opalton/rambow_rock_1.jpg',
+  './data/photos/opalton/red_opal_0.jpg',
+  './data/photos/opalton/red_opal_1.jpg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',

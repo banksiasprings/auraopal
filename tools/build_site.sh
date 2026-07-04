@@ -11,5 +11,9 @@ rm -rf "$OUT"; mkdir -p "$OUT"
 cp -R "$ROOT/www/." "$OUT/"
 cp -R "$ROOT/data"  "$OUT/data"
 cp -R "$ROOT/icons" "$OUT/icons"
+# The source KML (opal_mine_v2.kml, ~12 MB) is kept in the repo for reference/re-ingestion
+# but is NOT needed at runtime (the app uses the extracted GeoJSON/photos) — keep it out of
+# the published site so Pages doesn't serve 12 MB.
+rm -f "$OUT/data"/*.kml
 touch "$OUT/.nojekyll"
 echo "Assembled $OUT ($(find "$OUT" -type f | wc -l | tr -d ' ') files)"
