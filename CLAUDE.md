@@ -11,6 +11,19 @@ Live: https://banksiasprings.github.io/auraopal/ · app source in `www/` (`index
 + `manifest.json`); canonical `data/` + `icons/` are top-level siblings. Detailed build log:
 `NIGHT_LOG.md` (read the tail before changing anything).
 
+## Research docs (`research/`)
+The decision + analysis trail behind the app's geophysics and favourability thinking (research only —
+none of these is app code):
+- **`opal_favourability_data_sources.md`** — the master landscape: every verified data source over
+  Opalton + the ranked menu of active exploration techniques.
+- **`gpr_ert_deep_dive.md`** — GPR-vs-ERT decision doc: the physics, then build-vs-buy-vs-rent-vs-
+  contract with AUD figures. Verdict: **ERT is the star tool; build a DIY OhmPi** (ERT maps the
+  clay-basement pools → optional hired GPR characterises the ironstone above them).
+- **`diy_ert_build_project.md`** — the hands-on **sequel** to the deep-dive: the full DIY ERT build
+  project. BOM + assembly + software (ResIPy → PyGIMLi) + field operation + worked BSF/Opalton survey
+  plans + AUD cost (**~$800 for 32 electrodes**) + hours + community/safety. Every figure flagged
+  VERIFIED/ESTIMATE. Prove-on-the-farm-first path (BSF deco/clay/bore) before the winter-2027 Opalton trip.
+
 ## Deploy / OTA
 GitHub Pages branch-source can only serve `/` or `/docs`, so `tools/build_site.sh` flattens
 `www/` + `data/` + `icons/` into `_site/` and `.github/workflows/deploy.yml` uploads that as the
