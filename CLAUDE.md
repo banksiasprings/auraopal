@@ -23,6 +23,7 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
 
 | Version | What | Where |
 |---|---|---|
+| **v0.1.1** | 🎯 **Lease-first.** Default view zooms to Steven's claim (z16). Added: **10 m contours** (QLD SRTM, bundled offline, clipped to the lease — NO LiDAR 1m/5m exists over remote Opalton), **Hillshade** (Esri), and two honest geophysics-enhancement overlays — **Radiometrics ternary** (`radmap_v4_2019_filtered_ternary_image`, the "moderate weathering signal, often > mag here") and **Magnetics 1VD** (`magmap_v7_2019_1VD`, shallow/structural filter). Brighter claim boundary. New **📋 Site info** panel: stratigraphy column + ground-truth patterns + honest imagery/terrain/photo/geophysics notes. Satellite over-zoom to z19. Field photos: the Aug 2025 KML's photos didn't survive the upload purge (re-export needed). | `www/index.html` · `research/` (Active exploration techniques) |
 | **v0.1** | 🪨 First build. 3 basemaps (Satellite default / Topographic / ⬜ Minimal). Steven's Aug 2025 ground truth: claim polygon (~15 ha), 10 opal finds colour-coded by type (gem=green, red=red, potch=brown, patch=amber), 3 fault markers, 6 trench excavations. Winton Formation footprint (QLD geology). GA magnetics (TMI-RTP) heatmap clipped to a ~50 km buffer. QLD mining-tenement overlay (ML/MC/EPM, opal-mineral highlighted) as the legality+activity layer. Data-viz only — **no favourability scoring yet.** | `www/` · `research/opal_favourability_data_sources.md` |
 
 ## Do-not-break invariants
@@ -47,7 +48,10 @@ Local preview: `bash tools/build_site.sh && (cd _site && python3 -m http.server 
 | Satellite | Esri World Imagery | `server.arcgisonline.com/.../World_Imagery` | Esri terms |
 | Topographic | OpenTopoMap | `tile.opentopomap.org` | CC-BY-SA |
 | Winton Formation | GSQ State Surface Geology (`ru_name='Winton Formation'`, symbol `Kw`) | QLD Spatial `GeoscientificInformation/GeologyState` L6 → bundled `data/winton_formation.geojson` | CC-BY 4.0 |
-| Magnetics (TMI-RTP) | Geoscience Australia national geophysical grids v7 2019 | `services.ga.gov.au/gis/geophysical-grids/wms` layer `geophys:magmap_v7_2019_RTP` (WMS overlay, runtime-cached) | CC-BY 4.0 |
+| Contours (10 m) | QLD Contours, 10 m (from GA 1-second ~30 m bare-earth SRTM DEM) | QLD Spatial `Elevation/Contours` L10 → bundled `data/contours_10m_opalton.geojson` (clipped to lease). L20/L30 (LiDAR 5m/1m) = 0 features over Opalton | CC-BY 4.0 |
+| Hillshade | Esri World Hillshade (global relief) | `server.arcgisonline.com/.../Elevation/World_Hillshade` | Esri terms |
+| Magnetics (TMI-RTP / 1VD) | Geoscience Australia national geophysical grids v7 2019 | `services.ga.gov.au/gis/geophysical-grids/wms` layers `geophys:magmap_v7_2019_RTP` + `_1VD` (WMS, runtime-cached) | CC-BY 4.0 |
+| Radiometrics (ternary) | GA national radiometric grids v4 2019 (K-Th-U) | same WMS, `geophys:radmap_v4_2019_filtered_ternary_image` | CC-BY 4.0 |
 | Mining tenements | QLD Mineral Tenement (ML/MC/EPM; opal = `tenmineral='OP'`) | QLD Spatial `Economy/MineralTenement` FeatureServer → bundled `data/tenements_opalton.geojson` | CC-BY 4.0 |
 | Ground truth | Steven's Opalton field trip, Aug 2025 | Google Earth KML → `~/Documents/wikis/prospecting/opalton_aug2025_analysis.md` | Steven's |
 
@@ -63,6 +67,18 @@ colour). Depth stratification is real (0.3 m surface → 4 m in situ → 8 m iso
 Favourability drivers to model later: Winton Fm extent (necessary), ironstone (→ magnetics),
 weathering/clay (→ radiometrics K/Th/U), clay-dam topographic pockets (→ DEM slope/drainage +
 Geofabric), structure (→ faults/lineaments), historical activity (→ tenement/claim density).
+
+## Geophysics honesty (v0.1.1 — see `research/` "Active exploration techniques")
+Over Opalton: **airborne mag = weak** (coarse survey + low-Fe Winton ironstone, chemically unlike
+the Mt Isa ore country the surveys were flown for — keep it for structure/lineaments only, hence
+the 1VD enhancement layer); **radiometrics = moderate** (real weathering/silicification proxy —
+the better free layer); **the real prize = high-res GPR or ERT over the claim itself.** Research
+verdict: **ERT** is the best-fit technique (clay-conductive vs ironstone-resistive contrast is a
+direct match, reaches 5–8 m, ~AUD 2–4k/day indicative); **GPR is killed by the basal clay**;
+Rio Tinto's "ute-dragged" tool is most likely a towed ground-TEM/EM conductivity array (moderate
+confidence — could not confirm a specific Rio density mapper). East-vs-west Eromanga margin: east
+favoured for geological reasons (shallow weathered Winton Fm), west likely deeper/less-weathered —
+a moderate-confidence hypothesis to test, not a settled opportunity.
 
 ## Deferred (see `research/` for verdicts)
 Favourability scoring · radiometrics (K/Th/U — GA `radmap_v4_2019_*`, verified, not yet wired) ·

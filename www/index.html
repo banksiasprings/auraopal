@@ -98,6 +98,21 @@
   .src-list { font-size: 11.5px; color: #8b93a1; line-height: 1.55; }
   .src-list b { color: #cdd3dc; }
 
+  /* Site-info stratigraphy column */
+  .strata { margin: 4px 0 10px; border-radius: 8px; overflow: hidden; border: 1px solid #262a34; }
+  .strata-row { display: flex; align-items: center; gap: 9px; padding: 7px 10px; font-size: 12.5px; color: #dfe4ec; }
+  .strata-row .band { width: 20px; height: 20px; border-radius: 4px; flex: none; border: 1px solid rgba(255,255,255,.15); }
+  .strata-row .st-t { font-weight: 600; }
+  .strata-row .st-d { color: #9aa3b0; font-size: 11px; }
+  .strata-row.opal { background: rgba(34,197,94,.08); }
+  .strata-row.opal .st-t::after { content: ' 🪨'; }
+  .site-note { font-size: 12px; line-height: 1.5; color: #c7cdd6; margin: 4px 0; padding-left: 16px; text-indent: -12px; }
+  .site-note::before { content: '▸ '; color: #14b8a6; }
+  .site-flag { margin-top: 8px; font-size: 11.5px; color: #f0b06a; line-height: 1.5; }
+  .contour-lbl { background: transparent !important; border: none !important; box-shadow: none !important;
+    color: #f0c088 !important; font-size: 10px; font-weight: 600; text-shadow: 0 0 3px #000, 0 0 3px #000; }
+  .contour-lbl::before { border: none !important; }
+
   /* Leaflet popups — dark opal theme */
   .leaflet-popup-content-wrapper { background: #171a22; color: #e8eaf0; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
   .leaflet-popup-tip { background: #171a22; }
@@ -138,15 +153,19 @@
   <h2>Ground truth · Aug 2025 field trip</h2>
   <div id="gtRows"></div>
 
+  <h2>📋 Site info · the lease</h2>
+  <div id="siteInfo" class="about"></div>
+
   <h2>Legend</h2>
   <div id="legend"></div>
 
   <h2>About &amp; data sources</h2>
   <div class="about">
     <p><b>AuraOpal</b> is an offline-first field map for the <b>Opalton boulder-opal field</b>, Central-West
-    Queensland. It plots Steven's Aug 2025 ground-truth finds against the geology, geophysics and mining-tenement
-    layers that drive boulder-opal favourability. v0.1 shows the <i>raw</i> data honestly — it does <b>not</b>
-    predict where opal is. Favourability scoring is deliberately deferred.</p>
+    Queensland, anchored on <b>Steven's mining lease</b> (Aug 2025 field trip). It plots his ground-truth finds
+    against the geology, geophysics and mining-tenement layers that drive boulder-opal favourability. It shows the
+    <i>raw</i> data honestly — it does <b>not</b> predict where opal is. Favourability scoring is deliberately
+    deferred until the data layers are complete and calibrated against the ground truth.</p>
     <div class="src-list" id="srcList"></div>
     <p class="pop-adv" style="color:#f0b06a">⚠ Fossicking / mining legality shown is advisory only, derived from
     public tenement data. Always verify tenure and permissions with the Queensland Government before entering or
@@ -165,15 +184,18 @@
    (excavation geology, not metal detection).
    BUMP APP_VERSION in lockstep with SHELL_REV in sw.js on every deploy.
    ============================================================================ */
-var APP_VERSION = 'v0.1';
+var APP_VERSION = 'v0.1.1';
 
 // ---- Study area -----------------------------------------------------------
-// Opalton field bbox ≈ 142.5–143.0°E, 23.5–24.0°S. Steven's claim ≈ 142.735, −23.748.
+// The lease is the anchor (80% of the value). Opalton field bbox ≈ 142.5–143.0°E,
+// 23.5–24.0°S; Steven's claim ≈ 142.735, −23.748. Default view frames the claim.
 var OPALTON = [-23.7483, 142.7346];          // [lat, lon] — claim centroid
-var CLAIM_ZOOM = 15;
-// ~50 km buffer around the field, used to clip the magnetics overlay so it never
-// paints the whole national grid across the screen.
+var CLAIM_ZOOM = 16;                          // lease-focus zoom (claim ~450 m long)
+// ~50 km buffer around the field, used to clip the geophysics overlays so they never
+// paint the whole national grid across the screen.
 var MAG_BOUNDS = L.latLngBounds([[-24.20, 142.24], [-23.29, 143.23]]);
+// Contour data extent (bundled offline; QLD 10 m SRTM contours clipped to the lease).
+var CONTOUR_BOUNDS = L.latLngBounds([[-23.760, 142.720], [-23.740, 142.750]]);
 
 // ---- Ground-truth data (Steven's Google Earth KML, Aug 2025 field trip) -----
 // Verbatim from ~/Documents/wikis/prospecting/opalton_aug2025_analysis.md.
@@ -224,20 +246,41 @@ var TRENCHES = [ // 6 excavation line-strings, oriented ~NE–SW (parallel to th
 var FIND_COLORS = { gem:'#22c55e', red:'#ef4444', potch:'#92531f', patch:'#f59e0b' };
 var FIND_LABELS = { gem:'Gem opal', red:'Red opal', potch:'Potch', patch:'Patch / indeterminate' };
 
+// ---- Site info (stratigraphy + ground-truth patterns, from the Aug 2025 analysis) ----
+// Shown in the drawer's "Site info" panel. Steven's own field observations — the calibration
+// truth the whole app is anchored to.
+var STRATA = [ // top → bottom, with the opal-forming horizons flagged
+  { c:'#c9b28a', t:'Sandstone overburden', d:'up to a few metres' },
+  { c:'#7a4a28', t:'Ironstone layers ×3–4', d:'opal forms IN certain zones here — bottom layer usually best', opal:true },
+  { c:'#c9b28a', t:'Sandstone', d:'~1 m' },
+  { c:'#5b8bb0', t:'Clay layer (the dam)', d:'impermeable — traps silica-rich water; clay-dam pockets = highest value', opal:true }
+];
+var PATTERNS = [
+  'Best gem/red opal clusters in a ~40×40 m box WEST of the fault, at ~4 m depth.',
+  'Fault-adjacent finds run potchy — fractures carry silica water but tend to make patch, not colour.',
+  'Depth stratification is real: 0.3 m surface → 4 m in situ → 8 m isolated boulders (three horizons).',
+  'Trenches run NE–SW, parallel to the fault trend — miners followed the structure.'
+];
+
 // ---- Map + panes ----------------------------------------------------------
 var map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 18, minZoom: 6 })
   .setView(OPALTON, CLAIM_ZOOM);
 map.zoomControl.setPosition('topright');
 
-// z-order: bases < mag < winton < tenements < faults/trenches/claim < finds
-['p-sat','p-topo','p-minimal','p-mag','p-winton','p-tenement','p-struct','p-claim','p-finds']
-  .forEach(function(p, i) { map.createPane(p); map.getPane(p).style.zIndex = 200 + i * 20; });
+// z-order (bottom→top): bases < terrain (hillshade) < geophysics rasters (rad/mag/1vd)
+// < geology/tenure fills < contours < ground truth (trenches/faults/claim/finds).
+['p-sat','p-topo','p-minimal','p-hill','p-rad','p-mag','p-1vd','p-winton','p-tenement',
+ 'p-contour','p-struct','p-claim','p-finds']
+  .forEach(function(p, i) { map.createPane(p); map.getPane(p).style.zIndex = 200 + i * 15; });
 map.getPane('p-finds').style.zIndex = 650; // above markerPane default
 
 // ---- Base maps ------------------------------------------------------------
+// Highest free aerial available over remote Opalton is Esri World Imagery (~z18 native).
+// We over-zoom to 19 for on-claim inspection. Higher-res paid aerial (Nearmap) does NOT
+// cover remote CW QLD on a free tier — flagged in Site info, not wired.
 var baseSat = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { attribution: 'Imagery © Esri', maxZoom: 18, noWrap: true, pane: 'p-sat' });
+  { attribution: 'Imagery © Esri', maxZoom: 19, maxNativeZoom: 18, noWrap: true, pane: 'p-sat' });
 var baseTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
   { attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17, noWrap: true, pane: 'p-topo' });
 // ⬜ Minimal — solid near-white fill, rendered client-side (no tiles, instant offline).
@@ -260,9 +303,50 @@ var activeBase = 'sat';
 // whole-continent wash. This is a RAW geophysical signal, not a favourability forecast.
 var layerMag = L.tileLayer.wms('https://services.ga.gov.au/gis/geophysical-grids/wms', {
   layers: 'geophys:magmap_v7_2019_RTP', format: 'image/png', transparent: true,
-  opacity: 0.55, pane: 'p-mag', maxZoom: 18, maxNativeZoom: 13, noWrap: true,
+  opacity: 0.55, pane: 'p-mag', maxZoom: 19, maxNativeZoom: 13, noWrap: true,
   bounds: MAG_BOUNDS, attribution: 'Magnetics TMI-RTP © Geoscience Australia (CC-BY 4.0)'
 });
+// Magnetics 1VD (first vertical derivative) — an enhancement filter that sharpens SHALLOW /
+// near-surface and structural signal vs the smooth TMI-RTP. Still a raw geophysical signal.
+var layer1VD = L.tileLayer.wms('https://services.ga.gov.au/gis/geophysical-grids/wms', {
+  layers: 'geophys:magmap_v7_2019_1VD', format: 'image/png', transparent: true,
+  opacity: 0.55, pane: 'p-1vd', maxZoom: 19, maxNativeZoom: 13, noWrap: true,
+  bounds: MAG_BOUNDS, attribution: 'Magnetics 1VD © Geoscience Australia (CC-BY 4.0)'
+});
+// Radiometrics ternary (K-Th-U RGB) — weathering/alteration signal. Often MORE useful than
+// mag over Opalton: it maps regolith/silicification near ironstone even when mag is flat.
+var layerRad = L.tileLayer.wms('https://services.ga.gov.au/gis/geophysical-grids/wms', {
+  layers: 'geophys:radmap_v4_2019_filtered_ternary_image', format: 'image/png', transparent: true,
+  opacity: 0.55, pane: 'p-rad', maxZoom: 19, maxNativeZoom: 13, noWrap: true,
+  bounds: MAG_BOUNDS, attribution: 'Radiometrics © Geoscience Australia (CC-BY 4.0)'
+});
+// Hillshade (Esri World Hillshade) — terrain relief for the lease. Global relief derived from
+// SRTM-class DEM; no public LiDAR hillshade over remote Opalton.
+var layerHill = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}',
+  { opacity: 0.65, pane: 'p-hill', maxZoom: 19, maxNativeZoom: 16, noWrap: true, attribution: 'Hillshade © Esri' });
+
+// Contours — QLD 10 m contours (bundled GeoJSON, clipped to the lease, offline). Derived from
+// GA 1-second (~30 m) bare-earth SRTM DEM. NO LiDAR 1 m/5 m over remote Opalton (see Site info).
+var layerContours = null;
+function loadContours(cb) {
+  if (layerContours) { if (cb) cb(); return; }
+  fetch('data/contours_10m_opalton.geojson').then(function(r){ return r.json(); }).then(function(gj){
+    layerContours = L.geoJSON(gj, {
+      pane: 'p-contour',
+      style: function(f) {
+        var idx = /Index/i.test((f.properties||{}).feature_type || '');
+        return { color: '#e8a15a', weight: idx ? 1.6 : 0.9, opacity: idx ? 0.9 : 0.6 };
+      },
+      onEachFeature: function(f, ly) {
+        var e = (f.properties||{}).elevation_m;
+        if (e != null) ly.bindTooltip(e + ' m', { permanent: /Index/i.test(f.properties.feature_type||''),
+          direction: 'center', className: 'contour-lbl' });
+      }
+    });
+    if (cb) cb();
+  }).catch(function(e){ console.warn('Contours load failed', e); if (cb) cb(); });
+}
 
 // Winton Formation footprint (bundled GeoJSON — QLD state surface geology, ru_name='Winton Formation').
 var layerWinton = null;
@@ -324,8 +408,8 @@ function loadTenements(cb) {
 }
 
 // ---- Ground-truth vector layers (always available, no fetch) ---------------
-var claimLayer = L.polygon(CLAIM, { pane: 'p-claim', color: '#14b8a6', weight: 2.5,
-  fillColor: '#14b8a6', fillOpacity: 0.05, dashArray: '6 4' })
+var claimLayer = L.polygon(CLAIM, { pane: 'p-claim', color: '#2dd4bf', weight: 3.5,
+  fillColor: '#14b8a6', fillOpacity: 0.04, dashArray: '9 5', lineJoin: 'round' })
   .bindPopup('<div class="pop-title">📐 Steven\'s claim</div>' +
     '<div class="pop-kv">~15 ha · long axis NNE–SSW</div>' +
     '<div class="pop-note">Aug 2025 field trip. Best gem/red opal clusters in the western part; ' +
@@ -370,12 +454,23 @@ FINDS.forEach(function(f){
 
 // ---- Overlay + ground-truth registries (drive the drawer toggles) ----------
 var OVERLAYS = [
-  { k:'mag',     name:'Magnetics (TMI-RTP)', sub:'GA raw geophysics · ironstone signal', sw:'#c084fc',
-    on:false, get:function(){ return layerMag; }, lazy:null },
+  // Terrain (the lease)
+  { k:'contour', name:'Contours (10 m)',     sub:'QLD SRTM · no LiDAR out here', sw:'#e8a15a',
+    on:true,  get:function(){ return layerContours; }, lazy:loadContours },
+  { k:'hill',    name:'Hillshade',           sub:'Terrain relief (Esri)', sw:'#8a8f98',
+    on:false, get:function(){ return layerHill; }, lazy:null },
+  // Geology & tenure
   { k:'winton',  name:'Winton Formation',    sub:'Boulder-opal host rock (QLD geology)', sw:'#7c5cff',
     on:true,  get:function(){ return layerWinton; }, lazy:loadWinton },
   { k:'tenement',name:'Mining tenements',    sub:'Legality + activity (QLD MineralTenement)', sw:'#dc2626',
-    on:false, get:function(){ return layerTen; }, lazy:loadTenements }
+    on:false, get:function(){ return layerTen; }, lazy:loadTenements },
+  // Geophysics — RAW signals, not forecasts (see Site info for the honest read)
+  { k:'rad',     name:'Radiometrics (ternary)', sub:'Weathering signal · often > mag here', sw:'#22d3a0',
+    on:false, get:function(){ return layerRad; }, lazy:null },
+  { k:'mag',     name:'Magnetics (TMI-RTP)', sub:'Weak/coarse here — structure only', sw:'#c084fc',
+    on:false, get:function(){ return layerMag; }, lazy:null },
+  { k:'1vd',     name:'Magnetics (1VD)',     sub:'Shallow/structural enhancement filter', sw:'#a78bfa',
+    on:false, get:function(){ return layer1VD; }, lazy:null }
 ];
 var GROUNDTRUTH = [
   { k:'claim',   name:'Claim polygon',     sub:'~15 ha, Aug 2025',           sw:'#14b8a6', on:true, layer: claimLayer },
@@ -439,15 +534,41 @@ GROUNDTRUTH.forEach(function(g){
   if (g.on) g.layer.addTo(map);
 });
 
+// ---- Site info panel ------------------------------------------------------
+(function(){
+  var h = '<p style="margin:2px 0 8px;color:#b9c0cb">Steven\'s claim is the anchor — ~15 ha, worked Aug 2025. ' +
+    'Everything else zooms out from here.</p>';
+  h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:6px 0 3px">Stratigraphy (top → bottom)</div>';
+  h += '<div class="strata">';
+  STRATA.forEach(function(s){
+    h += '<div class="strata-row' + (s.opal ? ' opal' : '') + '"><span class="band" style="background:' + s.c + '"></span>' +
+      '<span><span class="st-t">' + s.t + '</span><br><span class="st-d">' + s.d + '</span></span></div>';
+  });
+  h += '</div>';
+  h += '<div style="font-weight:600;color:#cdd3dc;font-size:12px;margin:8px 0 3px">Ground-truth patterns</div>';
+  PATTERNS.forEach(function(p){ h += '<div class="site-note">' + p + '</div>'; });
+  h += '<div class="site-flag">🛰 <b>Imagery:</b> Esri World Imagery (~z18 native, over-zoomed to 19). ' +
+    'Higher-res paid aerial (Nearmap) doesn\'t cover remote CW QLD on a free tier.<br>' +
+    '⛰ <b>Terrain:</b> only 10 m contours (from GA 1-second ~30 m SRTM) exist over the claim — ' +
+    'there is NO LiDAR 1 m/5 m out here. 1 m contours aren\'t available; 10 m is the ceiling.<br>' +
+    '📷 <b>Field photos:</b> the Aug 2025 KML\'s photos didn\'t survive the upload purge. Re-export from ' +
+    'Google Earth to <code>wikis/prospecting/</code> and they can be added.<br>' +
+    '📡 <b>Geophysics:</b> over Opalton, airborne mag is weak (coarse + low-Fe Winton ironstone), ' +
+    'radiometrics is a moderate weathering signal, and the real prize is high-res GPR/ERT over the ' +
+    'claim itself — see <code>research/</code> for the technique + cost breakdown.</div>';
+  document.getElementById('siteInfo').innerHTML = h;
+})();
+
 // ---- Legend ---------------------------------------------------------------
 document.getElementById('legend').innerHTML =
   '<div class="legend-item"><span class="g gem-marker" style="background:#22c55e"></span> Gem opal</div>' +
   '<div class="legend-item"><span class="g gem-marker" style="background:#ef4444"></span> Red opal</div>' +
   '<div class="legend-item"><span class="g gem-marker" style="background:#92531f"></span> Potch (colourless)</div>' +
   '<div class="legend-item"><span class="g gem-marker" style="background:#f59e0b"></span> Patch / indeterminate</div>' +
-  '<div class="legend-item"><span class="g" style="border:2px dashed #14b8a6;background:rgba(20,184,166,.1)"></span> Claim polygon</div>' +
+  '<div class="legend-item"><span class="g" style="border:2px dashed #2dd4bf;background:rgba(20,184,166,.1)"></span> Claim polygon (the lease)</div>' +
   '<div class="legend-item"><span class="g" style="background:#ef4444;height:4px"></span> Fault</div>' +
   '<div class="legend-item"><span class="g" style="background:#fb923c;height:4px"></span> Trench (excavation)</div>' +
+  '<div class="legend-item"><span class="g" style="background:#e8a15a;height:3px"></span> Contour (10 m)</div>' +
   '<div class="legend-item"><span class="g" style="background:rgba(124,92,255,.25);border:1px solid #7c5cff"></span> Winton Fm (opal host)</div>' +
   '<div class="legend-item"><span class="g" style="background:rgba(220,38,38,.2);border:1.5px solid #dc2626"></span> Mining lease / claim</div>' +
   '<div class="legend-item"><span class="g" style="background:rgba(245,158,11,.4);border:1px solid #f59e0b"></span> Opal-mineral tenement</div>';
@@ -455,7 +576,9 @@ document.getElementById('legend').innerHTML =
 document.getElementById('srcList').innerHTML =
   '<b>Imagery</b> © Esri · <b>Topo</b> © OpenTopoMap (CC-BY-SA) · OSM contributors<br>' +
   '<b>Geology</b> — Winton Formation, Geological Survey of Queensland, <i>State Surface Geology</i> (CC-BY 4.0)<br>' +
-  '<b>Magnetics</b> — TMI-RTP, Geoscience Australia national geophysical grids v7 2019 (CC-BY 4.0)<br>' +
+  '<b>Contours</b> — QLD <i>Contours</i> 10 m (from GA 1-second bare-earth SRTM DEM) (CC-BY 4.0)<br>' +
+  '<b>Hillshade</b> — Esri World Hillshade (global relief)<br>' +
+  '<b>Geophysics</b> — Magnetics (TMI-RTP, 1VD) + Radiometrics (ternary), Geoscience Australia national grids v7/v4 2019 (CC-BY 4.0)<br>' +
   '<b>Tenements</b> — QLD <i>Mineral Tenement</i>, Dept of Resources / GeoResGlobe (CC-BY 4.0)<br>' +
   '<b>Ground truth</b> — Steven\'s Opalton field trip, Aug 2025 (Google Earth KML)';
 

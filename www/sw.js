@@ -10,7 +10,7 @@
  * Bump SHELL_REV on every deploy so returning clients re-fetch the app shell.
  * Keep it in lockstep with APP_VERSION in index.html (the on-screen version badge).
  */
-const SHELL_REV = 'v0.1';
+const SHELL_REV = 'v0.1.1';
 const SHELL_CACHE = 'auraopal-shell-' + SHELL_REV;
 const TILE_CACHE = 'auraopal-tiles-v1';
 
@@ -22,6 +22,7 @@ const SHELL_ASSETS = [
   // Ground-truth-adjacent bundled overlays (small, precached so they work offline).
   './data/winton_formation.geojson',
   './data/tenements_opalton.geojson',
+  './data/contours_10m_opalton.geojson',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',

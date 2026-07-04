@@ -4,6 +4,48 @@ The long-form record. Newest at top. Read the tail before changing anything.
 
 ---
 
+## v0.1.1 — lease-first + terrain + honest geophysics (2026-07-04)
+
+Steven's mid-build asks: focus 80% on his mining lease; add best-available terrain; be honest
+about magnetics; research active geophysical techniques for shallow (5–8 m) boulder opal.
+
+### App
+- **Default view zooms to the claim** (`CLAIM_ZOOM` 15→16); brighter/thicker claim boundary; the
+  lease is now the anchor.
+- **10 m contours** — QLD `Elevation/Contours` L10 (SRTM-derived), fetched then **clipped to the
+  lease** with a Liang-Barsky polyline clip (11 lines, 17 KB, 250–280 m) and **bundled offline**.
+  Confirmed the honest constraint: **LiDAR 5 m (L20) and 1 m (L30) return 0 features over the
+  claim** — no LiDAR flown over remote Opalton, so 10 m is the resolution ceiling.
+- **Hillshade** — Esri World Hillshade toggle.
+- **Two honest geophysics-enhancement overlays** (validated by the research): **Radiometrics
+  ternary** (`radmap_v4_2019_filtered_ternary_image` — the moderate weathering signal, labelled
+  "often > mag here") and **Magnetics 1VD** (`magmap_v7_2019_1VD` — shallow/structural filter).
+  TMI-RTP relabelled "weak/coarse here — structure only".
+- **Satellite over-zoom** to z19 (native z18) for on-claim inspection; Nearmap flagged as
+  paid/no-free-cover.
+- **📋 Site info panel** — stratigraphy column (sandstone → ironstone ×3–4 🪨 → sandstone → clay
+  dam 🪨, opal horizons flagged) + 4 ground-truth patterns + honest imagery/terrain/photo/
+  geophysics notes.
+- **Field photos:** the Aug 2025 KML's photos did NOT survive the Cowork upload purge (only the
+  analysis MD remains; the sole KMLs on disk are AuraGold's Victoria files, untouched). Flagged in
+  Site info with the re-export path. Nothing fabricated.
+
+### Research (appended to `research/opal_favourability_data_sources.md`, 203→360 lines, all preserved)
+- **Active exploration techniques** — GPR (killed by basal clay), ERT (**best fit** — clay/ironstone
+  resistivity contrast, 5–8 m, ~AUD 2–4k/day), TDEM, passive seismic, reflection seismic, + a
+  fit/cost table. Rio Tinto "ute-dragged" tool = most likely a towed ground-TEM/EM array (moderate
+  confidence; no specific Rio density mapper confirmed).
+- **Honest geophysics assessment** — mag weak / radiometrics moderate / GPR-ERT the real prize;
+  which enhancement filters (RTP/1VD/tilt) the GA WMS already publishes.
+- **East-vs-west Eromanga margin** (v0.2+ note) — east favoured for geological reasons; west
+  deeper/less-weathered hypothesis, flagged uncertain.
+
+### Verified (headless, localhost, after clearing the v0.1 SW cache)
+Version `v0.1.1`; 7 overlays; 11 contour lines + 3 index labels render; site-info shows 4 strata +
+4 patterns; Hillshade tiles 200; GA radiometrics + 1VD WMS load; 0 console errors.
+
+---
+
 ## v0.1 — first build (2026-07-04)
 
 Scaffolded AuraOpal as a **sibling of AuraGold** (not a fork): same offline-PWA pattern

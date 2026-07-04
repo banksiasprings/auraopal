@@ -12,20 +12,33 @@ for the opal domain: this is **excavation geology**, not metal detecting.
 > It does **not** predict where opal is — favourability scoring is deliberately deferred until
 > the raw data layers are honest and complete.
 
-## What v0.1 shows
+## What it shows
 
-- **Base maps** — Satellite (Esri, default), Topographic (OpenTopoMap), ⬜ Minimal (blank, offline).
+**Anchored on Steven's mining lease** (the default view frames the ~15 ha claim).
+
+- **Base maps** — Satellite (Esri, default, over-zoomed to z19 for on-claim detail), Topographic
+  (OpenTopoMap), ⬜ Minimal (blank, offline).
 - **Ground truth (Aug 2025 field trip)** — the claim polygon (~15 ha), 10 opal finds colour-coded
   by type (🟢 gem · 🔴 red · 🟤 potch · 🟠 patch/indeterminate) with depth, 3 fault markers, and
   6 trench excavations.
+- **Terrain** — 10 m contours (QLD SRTM, bundled offline — no LiDAR 1m/5m exists over remote
+  Opalton) + Esri hillshade.
 - **Winton Formation** — the boulder-opal host rock, from QLD state surface geology.
-- **Magnetics (TMI-RTP)** — Geoscience Australia's national magnetic grid, clipped to a ~50 km
-  buffer. A *raw geophysical signal* (an ironstone proxy), shown labelled — not a forecast.
+- **Geophysics (raw signals, labelled honestly)** — Radiometrics ternary (the moderate weathering
+  signal, often more useful here than mag) + Magnetics TMI-RTP and 1VD (weak/coarse over Opalton —
+  kept for structure). Clipped to a ~50 km buffer. None of these is a forecast.
 - **Mining tenements** — QLD Mineral Tenement (Mining Leases / Claims / Exploration Permits;
   opal-mineral tenements highlighted). Doubles as the legality + historical-activity layer.
+- **📋 Site info panel** — stratigraphy column + Steven's ground-truth patterns + honest notes on
+  imagery/terrain/photo/geophysics limits.
 
-Everything works offline once loaded (service worker precaches the shell + bundled GeoJSON;
-map tiles and the GA magnetics WMS are cached on view).
+Everything (contours, geology, tenements) works offline once loaded (service worker precaches the
+shell + bundled GeoJSON; map tiles and the GA geophysics WMS are cached on view).
+
+For which **active geophysical technique** to actually run over the claim (GPR vs ERT vs TDEM, with
+AUD costs), see [`research/opal_favourability_data_sources.md`](research/opal_favourability_data_sources.md)
+→ "Active exploration techniques". Short version: **ERT** is the best fit; GPR is killed by the
+basal clay.
 
 ## Structure
 
